@@ -1,7 +1,11 @@
 import pathlib as pl
 import numpy as np
 import h5py
-from cyclic_data.data_path import data_path as default_data_path
+try:
+    from cyclic_data.data_path import data_path as default_data_path
+except ModuleNotFoundError:
+    default_data_path = ''  # This ensures that the class is usable even without a default
+
 
 class Hdf5Data:
     def __init__(self, hdf5_data_file=pl.Path(default_data_path) / 'test_data.hdf5'):
