@@ -2,3 +2,6 @@
 # Python files to ignore
 *__pycache__
 *.pyc
+
+# Test files
+*.coverage
