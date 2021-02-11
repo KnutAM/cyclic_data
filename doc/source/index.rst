@@ -8,5 +8,6 @@ Analysis and visualization of cyclic data
    :caption: Contents:
    
    intro
+   experiment
    examples
    indices_and_tables
