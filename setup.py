@@ -6,5 +6,5 @@ setup(name='cyclic_data',
       author='Knut Andreas Meyer',
       author_email='knutam@gmail.com',
       url='https://cyclic-after-pdef-r260.readthedocs.io/en/latest/',
-      packages=['cyclic_data', 'cyclic_data.hdf5_data.load_hdf5_data'],
+      packages=['cyclic_data', 'cyclic_data.hdf5_data'],
      )
