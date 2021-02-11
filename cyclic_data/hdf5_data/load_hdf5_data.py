@@ -1,12 +1,10 @@
 import pathlib as pl
 import numpy as np
 import h5py
-
-default_data_file = pl.Path(__file__).parents[2].absolute() / 'data' / 'test_data.hdf5'
-
+from cyclic_data.data_path import data_path as default_data_path
 
 class Hdf5Data:
-    def __init__(self, hdf5_data_file=default_data_file):
+    def __init__(self, hdf5_data_file=pl.Path(default_data_path) / 'test_data.hdf5'):
         self.hdf = h5py.File(hdf5_data_file, 'r')
 
     def get_data_by_attributes(self, attributes):

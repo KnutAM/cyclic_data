@@ -5,3 +5,6 @@
 
 # Test files
 *.coverage
+
+# Build files
+build/

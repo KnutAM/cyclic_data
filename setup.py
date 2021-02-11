@@ -1,4 +1,11 @@
 from distutils.core import setup
+import pathlib as pl
+
+this_dir = pl.Path(__file__).parent
+data_path = this_dir / 'data'
+data_path_file = this_dir / 'cyclic_data' / 'data_path.py'
+with open(data_path_file, 'w') as fid:
+    fid.write('data_path = "{:s}"\n'.format(str(data_path.absolute())))
 
 setup(name='cyclic_data',
       version='1.0',
