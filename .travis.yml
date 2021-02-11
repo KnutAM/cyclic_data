@@ -7,7 +7,6 @@ install:
 # command to run tests
 script:
   - export PYTHONPATH=$PYTHONPATH:$(pwd)
-  - python -c "import sys; print(sys.path)"
   - pytest --cov=cyclic_data test/
 after_success:
   - coveralls
