@@ -12,9 +12,13 @@ Description of experiments
 #. Change load angle definition in hdf5 data file 
 #. Change initial dir angle in "description" field
 
+
 Predeformation experiments
 ==========================
-
+The full data for one predeformation experiment is available as
+a `dataset <https://data.mendeley.com/datasets/sjsyw6cmfd/2>`_. 
+Note that in this dataset, the torque, and rotations are reversed
+compared to the definitions above.
 
 
 Cyclic data
