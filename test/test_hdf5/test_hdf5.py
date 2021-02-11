@@ -1,11 +1,6 @@
 import sys
 import pathlib as pl
 import numpy as np
-
-# Add top level folder
-cyclic_data_dir = pl.Path(__file__).parents[2].absolute()
-sys.path.append(str(cyclic_data_dir))
-
 from cyclic_data.hdf5_data.load_hdf5_data import Hdf5Data
 
 hdf5_test_file = pl.Path(__file__).parent / 'test_file.hdf5'
