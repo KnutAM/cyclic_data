@@ -12,6 +12,8 @@ Description of experiments
 #. Change load angle definition in hdf5 data file 
 #. Change initial dir angle in "description" field
 
+|csys|
+
 
 Predeformation experiments
 ==========================
@@ -26,3 +28,6 @@ Cyclic data
 Describe structure and fields of hdf5 data.
 
 
+.. |csys| image:: /img/csys.svg
+          :align: middle
+          :alt: more info
