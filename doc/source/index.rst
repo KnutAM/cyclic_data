@@ -10,4 +10,5 @@ Analysis and visualization of cyclic data
    intro
    experiment
    examples
+   hdf5_data
    indices_and_tables

@@ -8,3 +8,6 @@
 
 # Build files
 build/
+
+# PyCharm files
+.idea/

@@ -1,4 +1,4 @@
-""" This scripts generates a hdf5 file to be used for testing the Hdf5Data class in load_hdf5_data.py
+""" This scripts generates a hdf5 file to be used for testing the Hdf5Data class in load.py
 The script should be run locally in its folder.
 """
 
