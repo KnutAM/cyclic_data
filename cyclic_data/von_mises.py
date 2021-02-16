@@ -34,7 +34,8 @@ def vm(sig, tau):
 
 def vm_angle(sig, tau):
     """ Calculate the angle in the ``sig``-``tau`` space, where ``tau`` is scaled to obtain a circle for equal
-    von Mises stresses. To avoid jumps around :math:`\\pi`, the interval (width=2pi) is adjusted within [-2pi, 2pi].
+    von Mises stresses. To avoid jumps around :math:`\\pi`, the interval (width=2pi) is adjusted within [-2pi, 2pi],
+    i.e. the interval is [amin, amin+2pi] where the mean angle is [amin+pi] and amin is in [-2pi,0]
     This only works as long as the angles are not rotating continuously, but remain within a certain smaller
     interval with width less than :math:`2\\pi`. In any case, the angle is measured from the ``sig``-axis.
 
