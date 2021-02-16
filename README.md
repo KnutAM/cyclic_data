@@ -8,6 +8,12 @@ Analysis and plotting of cyclic data after predeformation of R260 rail steel.
 
 ## Installation
 
+To clone (download) the repository using git
+
+`git clone git@github.com:KnutAM/cyclic_after_pdef_R260.git`
+
+Update the repository with `git pull` from inside the repository 
+
 ### Using conda environment(recommended)
 
 For this to work, you need to have conda install (e.g. by downloading anaconda). In order to work with this library, you should then do the following steps in cmd/shell (replace `<my_env>` with the environment name you wish to use.)
@@ -20,11 +26,13 @@ For this to work, you need to have conda install (e.g. by downloading anaconda).
 
 After completing these steps, the modules in `cyclic_data` will be available for importing in python session using the environment `<my_env>`. 
 
+**Update package**: If new updates (obtained via `git pull`) are to be included, run `pip install .` from the same directory as this file, while having `<my_env>` as your active conda environment. 
+
 ### Install globally using pip (alternative)
 
-In cmd or shell with the current working directory the same as for this readme: 
+In cmd or shell with the current working directory the same as for this readme: `pip install .`
 
-`pip install .`
+**Update package**: The same procedure is used to update if updates via `git pull` have been obtained. 
 
 ## Data availability
 Actual data is not part of the repository, but will be made available when the corresponding scientific publication has been peer-reviewed and accepted. 
