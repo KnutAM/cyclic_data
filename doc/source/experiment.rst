@@ -1,13 +1,6 @@
 Description of experiments
 ***************************
 
-#. Add predeformation end data and refer to full data set on Mendeley
-   data. Note the sign reversal! The data included should be corrected
-   wrt. torsional sign
-   
-   * The strains after each predeformation level (PD1,3,6)
-   * The Hill yield surfaces after each predeformation level (PD1,3,6)
-
 
 The pearlitic rail steel R260 was predeformed using the method in 
 `Meyer et al. (2018a) <https://doi.org/10.1016/j.ijsolstr.2017.10.007>`_, 
@@ -80,7 +73,8 @@ The Hill yield surface, :math:`\varPhi=0`, is given as
     + 3\left(\frac{\sigma_{\theta z}-b_{\theta z}}{H_{\theta z, \theta z}}\right)^2} - 1 = 0
 
 where :math:`H_{zz,zz},H_{\theta z, \theta z},h_{zz,\theta z},b_{zz}`, 
-and :math:`b_{\theta z}` are parameters for the Hill yield surface. 
+and :math:`b_{\theta z}` are parameters for the Hill yield surface 
+(corrected according to coordinate definitions in the above figure). 
 
 .. table:: Hill yield surface parameters for low plastic work limit from 
            `Meyer et al. (2020a) <https://doi.org/10.1016/j.euromechsol.2020.103977>`_
@@ -90,10 +84,10 @@ and :math:`b_{\theta z}` are parameters for the Hill yield surface.
                          Parameter          PD0          PD1          PD3          PD6   Unit
    ===============================  ===========  ===========  ===========  ===========  =====
                     :math:`b_{zz}`          1.7        -50.6        -57.6        -30.9    MPa
-              :math:`b_{\theta z}`          3.6         44.3         33.2         32.2    MPa
+              :math:`b_{\theta z}`         -3.6        -44.3        -33.2        -32.2    MPa
                  :math:`H_{zz,zz}`        335.8        341.2        373.4        401.2    MPa
     :math:`H_{\theta z, \theta z}`        365.5        287.3        292.1        313.3    MPa
-           :math:`h_{zz,\theta z}`    3429072.7    -333521.0    -167544.4   -1149326.5  MPa^2
+           :math:`h_{zz,\theta z}`   -3429072.7     333521.0     167544.4    1149326.5  MPa^2
    ===============================  ===========  ===========  ===========  ===========  =====
 
 
@@ -105,10 +99,10 @@ and :math:`b_{\theta z}` are parameters for the Hill yield surface.
                          Parameter          PD0          PD1          PD3          PD6   Unit
    ===============================  ===========  ===========  ===========  ===========  =====
                     :math:`b_{zz}`         -4.1        -91.0        -93.0        -63.9    MPa
-              :math:`b_{\theta z}`          2.7        111.8        104.1         89.6    MPa
+              :math:`b_{\theta z}`         -2.7       -111.8       -104.1        -89.6    MPa
                  :math:`H_{zz,zz}`        472.0        590.5        640.0        706.2    MPa
     :math:`H_{\theta z, \theta z}`        498.2        531.5        586.6        587.6    MPa
-           :math:`h_{zz,\theta z}`    4690470.1   -1070440.8   -1315116.5   -8602480.0  MPa^2
+           :math:`h_{zz,\theta z}`   -4690470.1    1070440.8    1315116.5    8602480.0  MPa^2
    ===============================  ===========  ===========  ===========  ===========  =====
 
 
