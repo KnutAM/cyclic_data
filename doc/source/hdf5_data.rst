@@ -1,5 +1,8 @@
-``Hdf5Data``
+Reading data
 ************
+
+``Hdf5Data``
+============
 
 .. autoclass:: load.Hdf5Data
    :members:

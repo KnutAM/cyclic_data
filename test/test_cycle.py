@@ -23,3 +23,14 @@ def test_get_pv_inds():
     for rs, cs, tns in zip(res, comps, test_names):
         for r, c, tn in zip(rs, cs, tns):
             assert r == approx(c), 'test ' + tn + ' failed'
+
+
+def test_get_mid_values():
+    # Test for correct identification of mid values
+    test_data = {'x': np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])}
+    pv_inds = [[1, 4, 9], [2, 7]]
+    mid_values = cy.get_mid_values(test_data, qty=['x'], pv_inds=pv_inds)
+
+    assert mid_values['x'][0] == approx([2.5, 6.5])
+    assert mid_values['x'][1] == approx([4.0, 9.0])
+
