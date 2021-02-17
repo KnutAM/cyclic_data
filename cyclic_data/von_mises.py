@@ -45,7 +45,7 @@ def vm_angle(sig, tau):
     :param tau: Shear stress, :math:`\\sigma_{\\theta z}`
     :type tau: float, np.array
 
-    :returns: The angle relative the sigma axis, in the :math:`\\sigma_{zz}-\\sqrt{3}\\sigma_{\theta z}` plane
+    :returns: The angle relative the sigma axis, in the :math:`\\sigma_{zz}-\\sqrt{3}\\sigma_{\\theta z}` plane
     :rtype: float, np.array
     """
 
