@@ -13,8 +13,12 @@ def test_test_file():
         hdf5 = Hdf5Data(hdf5_test_file)
     except Exception as e:
         assert False, "opening test file raised " + str(e)
-
-    assert isinstance(hdf5, Hdf5Data)
+    
+    assert isinstance(hdf5, Hdf5Data)   # Ensure that instance exists
+    assert hdf5.is_open()               # Ensure that file is open
+    
+    hdf5.close()
+    assert not hdf5.is_open()           # Ensure that file is closed
 
 
 def test_get_data_by_group():

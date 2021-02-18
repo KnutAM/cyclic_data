@@ -108,3 +108,12 @@ class Hdf5Data:
                 'stp': np.array(self.hdf[grp_name]['acnt']) + np.array(self.hdf[grp_name]['tcnt'])}
 
         return data, dict(self.hdf[grp_name].attrs)
+        
+    def is_open(self):
+        return True if self.hdf else False
+        
+    def close(self):
+        """ Close the file object
+        """
+        self.hdf.close()
+        
