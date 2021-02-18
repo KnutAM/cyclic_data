@@ -36,3 +36,16 @@ In cmd or shell with the current working directory the same as for this readme: 
 
 ## Data availability
 Actual data is not part of the repository, but will be made available when the corresponding scientific publication has been peer-reviewed and accepted. 
+
+## Running tests
+
+The tests can be run from the top level directory by just running
+
+``pytest`` 
+
+However, to get the test coverage, run
+
+``coverage run --source=cyclic_data -m pytest``
+
+``coverage report``
+
