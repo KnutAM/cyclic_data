@@ -34,3 +34,13 @@ def test_get_mid_values():
     assert mid_values['x'][0] == approx([2.5, 6.5])
     assert mid_values['x'][1] == approx([4.0, 9.0])
 
+
+def test_get_diff_values():
+    test_data = {'x': np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+                 'y': np.array([0, 2, 4, 8, 1, 2, 5, 2, 3, 4, 10])}
+    pv_inds = [[1, 5, 8], [3, 7, 9]]
+    diff_values = cy.get_diff_values(test_data, qty=['y', 'x'], pv_inds=pv_inds)
+
+    assert diff_values['x'][0] == approx([3-1, 7-5, 9-8])
+    assert diff_values['x'][1] == approx([5-3, 8-7])
+    assert diff_values['y'][0] == approx([8-2, 2-2, 4-3])

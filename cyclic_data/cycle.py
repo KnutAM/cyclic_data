@@ -57,8 +57,8 @@ def get_diff_values(test_data, qty, pv_inds):
 
     """
 
-    def difference(peak, valley):
-        return peak - valley
+    def difference(v1, v2):
+        return v2 - v1
 
     return get_segment_values(test_data, qty, pv_inds, difference)
 
