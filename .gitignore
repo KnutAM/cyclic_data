@@ -11,3 +11,6 @@ build/
 
 # PyCharm files
 .idea/
+
+# Environment installation files
+*.egg-info
