@@ -43,11 +43,15 @@ def smoothen(test_data, pv_inds, filter_functions, keys=None):
     fdict = filter_functions if isinstance(filter_functions, dict) else {key: filter_functions for key in keys}
 
     # Reshape indices (note, pv_inds should be sorted!)
-    inds = np.sort([i for j in pv_inds for i in j])
+    inds = list(np.sort([i for j in pv_inds for i in j]))
+    inds.insert(0, 0)
+    inds[-1] = inds[-1] + 1 # Ensure that last datapoint is included
+
 
     # Apply filter
     for i0, i1 in zip(inds[:-1], inds[1:]):
-        for key, f in zip(keys, fdict):
-            test_data_smooth[key][i0:i1] = f(test_data['time'], test_data[key])
+        for key, f_key in zip(keys, fdict):
+            filter_fun = fdict[f_key]
+            test_data_smooth[key][i0:i1] = filter_fun(test_data['time'][i0:i1], test_data[key][i0:i1])
 
     return test_data_smooth

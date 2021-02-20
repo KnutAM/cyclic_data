@@ -2,19 +2,20 @@ import patsy
 import statsmodels.api as sm
 
 
-def b_spline(t, v, knot_fraction=0.5, num_knots=None, params=()):
+def b_spline(t, v, knot_fraction=0.25, num_knots=None, params=None):
     return spline(t, v, patsy.bs, knot_fraction, num_knots, params)
 
 
-def natural_spline(t, v, knot_fraction=0.5, num_knots=None, params=()):
+def natural_spline(t, v, knot_fraction=0.25, num_knots=None, params=None):
     return spline(t, v, patsy.cr, knot_fraction, num_knots, params)
 
 
-def cubic_spline(t, v, knot_fraction=0.5, num_knots=None, params=()):
+def cubic_spline(t, v, knot_fraction=0.25, num_knots=None, params=None):
     return spline(t, v, patsy.cc, knot_fraction, num_knots, params)
 
 
-def spline(t, v, spline_basis, knot_fraction=0.5, num_knots=None, params={}):
+def spline(t, v, spline_basis, knot_fraction=0.25, num_knots=None, params=None):
+    params = {} if params is None else params
     # Setup basis function
     if 'df' in params:
         base_function = spline_basis(t, **params)
