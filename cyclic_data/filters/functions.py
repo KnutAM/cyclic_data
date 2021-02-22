@@ -1,6 +1,4 @@
 import numpy as np
-import patsy
-import statsmodels.api as sm
 
 
 def polynomial(t, v, deg=3, t_pred=None):
@@ -13,32 +11,88 @@ def polynomial(t, v, deg=3, t_pred=None):
         return np.polyval(p, t_pred)
 
 
-def linear_segments(t, v, num_segments=20, t_pred=None):
+def linear_segments(t, v, seg_fraction=0.25, num_segments=None, t_pred=None):
     """ Smooth v-data by fitting num_segments equally spaced linear segments
     """
-    assert len(t) > num_segments, 'number of segments cannot be more than number of datapoints'
-    return spline(t, v, patsy.bs, num_knots=num_segments, b_degree=1, t_pred=t_pred)
-
-
-def b_spline(t, v, knot_fraction=0.25, num_knots=None, t_pred=None):
-    """ Smooth v-data using B-spline
-    """
-    return spline(t, v, patsy.bs, knot_fraction, num_knots, t_pred=t_pred)
-
-
-def natural_spline(t, v, knot_fraction=0.25, num_knots=None, t_pred=None):
-    """ Smooth v-data using a natural cubic spline
-    """
-    return spline(t, v, patsy.cr, knot_fraction, num_knots, t_pred=t_pred)
+    return spline(t, v, degree=1, knot_fraction=seg_fraction, num_knots=num_segments, t_pred=t_pred)
 
 
 def cubic_spline(t, v, knot_fraction=0.25, num_knots=None, t_pred=None):
+    """ Smooth v-data by fitting cubic splines"""
+    return spline(t, v, degree=3, knot_fraction=knot_fraction, num_knots=num_knots, t_pred=t_pred)
+
+
+def spline(t, v, degree=3, knot_fraction=0.25, num_knots=None, t_pred=None):
+    """ Smooth v-data by fitting splines of given degree"""
+    sp = _Spline(degree=degree, knots=_get_knots(t, knot_fraction, num_knots))
+    sp.fit(t, v)
+    return sp.eval(t) if t_pred is None else sp.eval(t_pred)
+
+
+# Internal method / classes
+
+def _get_knots(t, knot_fraction, num_knots=None):
+    _num_knots = int(len(t) * knot_fraction) if num_knots is None else num_knots
+    return np.linspace(t[0], t[-1], _num_knots)
+
+
+class _Spline:
+    def __init__(self, degree, knots):
+        self.degree = degree
+        self.knot_vector = knots
+        self.coefficients = np.zeros(degree+1 + len(knots))
+        self.fitted = False
+
+    def fit(self, x, y):
+        fit_mat = self.get_fit_mat_(x)
+        self.coefficients = np.linalg.lstsq(fit_mat, y, rcond=None)[0]
+        self.fitted = True
+
+    def eval(self, x):
+        assert self.fitted
+        fit_mat = self.get_fit_mat_(x)
+        return fit_mat @ self.coefficients
+
+    # Internal methods
+    def get_fit_mat_(self, x):
+        fit_mat = np.zeros((len(x), len(self.coefficients)))
+        for n in range(self.degree + 1):
+            fit_mat[:, n] = x ** n
+        yv = np.zeros(len(x))
+        for i, knot in enumerate(self.knot_vector):
+            yv[:] = 0.0
+            yv[x > knot] = (x[x > knot] - knot) ** self.degree
+            fit_mat[:, self.degree + i + 1] = yv
+
+        return fit_mat
+
+
+'''
+# Old methods, keep as reference
+
+import patsy
+import statsmodels.api as sm
+
+
+def b_spline_patsy(t, v, knot_fraction=0.25, num_knots=None, t_pred=None):
+    """ Smooth v-data using B-spline
+    """
+    return spline_patsy(t, v, patsy.bs, knot_fraction, num_knots, t_pred=t_pred)
+
+
+def natural_spline_patsy(t, v, knot_fraction=0.25, num_knots=None, t_pred=None):
+    """ Smooth v-data using a natural cubic spline
+    """
+    return spline_patsy(t, v, patsy.cr, knot_fraction, num_knots, t_pred=t_pred)
+
+
+def cubic_spline_patsy(t, v, knot_fraction=0.25, num_knots=None, t_pred=None):
     """ Smooth v-data using a cubic spline
     """
-    return spline(t, v, patsy.cc, knot_fraction, num_knots, t_pred=t_pred)
+    return spline_patsy(t, v, patsy.cc, knot_fraction, num_knots, t_pred=t_pred)
 
 
-def spline(t, v, spline_basis, knot_fraction=0.25, num_knots=None, b_degree=None, t_pred=None):
+def spline_patsy(t, v, spline_basis, knot_fraction=0.25, num_knots=None, b_degree=None, t_pred=None):
     """ Smooth using a given spline basis with num_knots
     If num_knots not given, set num_knots = floor(len(t)*knot_fraction)
     If t_pred given, return predicted values for different time coordinates
@@ -76,3 +130,4 @@ def spline(t, v, spline_basis, knot_fraction=0.25, num_knots=None, b_degree=None
         smoothened = fit.predict(pred_model)
 
     return np.array(smoothened)
+'''

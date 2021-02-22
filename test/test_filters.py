@@ -40,8 +40,8 @@ def test_filters():
     num_points = 100
     t = np.linspace(0, 10, num_points)
     v = np.random.rand(num_points) + 2*t + 0.02*t**3
-    filter_functions = [ff.polynomial, ff.linear_segments,
-                        ff.b_spline, ff.cubic_spline, ff.natural_spline]
+    v_lin = 2 + 3*t
+    filter_functions = [ff.polynomial, ff.linear_segments, ff.cubic_spline]
     for fun in filter_functions:
         # Test that returned length is the same
         vf = fun(t, v)
@@ -50,16 +50,17 @@ def test_filters():
         # if the time input is the same
         vp = fun(t, v, t_pred=t)
         assert vp == approx(vf)
+        # Test that linear input is not modified
+        vp_lin = fun(t, v_lin)
+        assert vp_lin == approx(v_lin)
 
-    # When statsmodels.api.GLM is used, not possible to provide perfect linear data
-    # This raises PerfectSeparationError...
-
-    # Test that a linear function is represented exactly
-    v_lin = 2 + 3*t
-    assert ff.polynomial(t, v_lin, deg=1) == approx(v_lin)
-
-    # Test that quadratic function is represented exactly
+    # Test that quadratic function is represented exactly when it should
     v_quad = 3 + 2 * t + t ** 2
     assert ff.polynomial(t, v_quad, deg=2) == approx(v_quad)
+    assert ff.cubic_spline(t, v_quad) == approx(v_quad)
+
+    # Test that cubic function is represented exactly when it should
+    v_cube = v_quad + 3.1 * t ** 3
+    assert ff.cubic_spline(t, v_cube, num_knots=3) == approx(v_cube)
 
 
