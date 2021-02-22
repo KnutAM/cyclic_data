@@ -52,13 +52,13 @@ def spline(t, v, spline_basis, knot_fraction=0.25, num_knots=None, params=None, 
         df = int(len(t) * knot_fraction) if num_knots is None else num_knots
         base_function = spline_basis(t, df=df, **params)
 
-    model = patsy.dmatrix(base_function, return_type='dataframe')
+    model = patsy.dmatrix(base_function)
     fit = sm.GLM(v, model).fit()
 
     if t_pred is None:
         return fit.predict(model)
     else:
         pred_base = spline_basis(t_pred, **params) if 'df' in params else spline_basis(t_pred, df=df, **params)
-        pred_model = patsy.dmatrix(pred_base, return_type='dataframe')
+        pred_model = patsy.dmatrix(pred_base)
         return fit.predict(pred_model)
 
