@@ -2,7 +2,6 @@ import numpy as np
 from pytest import approx
 
 import cyclic_data.filter as flt
-import cyclic_data.filters.functions as ff
 
 
 def assert_dict_equality(dict1, dict2):
@@ -41,7 +40,7 @@ def test_filters():
     t = np.linspace(0, 10, num_points)
     v = np.random.rand(num_points) + 2*t + 0.02*t**3
     v_lin = 2 + 3*t
-    filter_functions = [ff.polynomial, ff.linear_segments, ff.cubic_spline]
+    filter_functions = [flt.polynomial, flt.linear_segments, flt.cubic_spline]
     for fun in filter_functions:
         # Test that returned length is the same
         vf = fun(t, v)
@@ -56,11 +55,11 @@ def test_filters():
 
     # Test that quadratic function is represented exactly when it should
     v_quad = 3 + 2 * t + t ** 2
-    assert ff.polynomial(t, v_quad, deg=2) == approx(v_quad)
-    assert ff.cubic_spline(t, v_quad) == approx(v_quad)
+    assert flt.polynomial(t, v_quad, deg=2) == approx(v_quad)
+    assert flt.cubic_spline(t, v_quad) == approx(v_quad)
 
     # Test that cubic function is represented exactly when it should
     v_cube = v_quad + 3.1 * t ** 3
-    assert ff.cubic_spline(t, v_cube, num_knots=3) == approx(v_cube)
+    assert flt.cubic_spline(t, v_cube, num_knots=3) == approx(v_cube)
 
 

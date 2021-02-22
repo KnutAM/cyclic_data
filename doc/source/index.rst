@@ -12,4 +12,5 @@ Analysis and visualization of cyclic data
    examples
    hdf5_data
    utils
+   filter
    indices_and_tables
