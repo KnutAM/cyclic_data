@@ -40,17 +40,23 @@ def cubic_spline(t, v, knot_fraction=0.25, num_knots=None, params=None, t_pred=N
 
 def spline(t, v, spline_basis, knot_fraction=0.25, num_knots=None, params=None, t_pred=None):
     """ Smooth using a given spline basis with num_knots
+    If 'knots' in params, use those knot locations
     If 'df" in params, set num_knots = params['df']
     If num_knots not given, set num_knots = floor(len(t)*knot_fraction)
     If t_pred given, return predicted values for different time coordinates
     """
-    params = {} if params is None else params
-    # Setup basis function
-    if 'df' in params:
-        base_function = spline_basis(t, **params)
-    else:
-        df = int(len(t) * knot_fraction) if num_knots is None else num_knots
-        base_function = spline_basis(t, df=df, **params)
+    params_ = {} if params is None else {key: params[key] for key in params if key != 'df'}
+    # Setup basis function, need to define knots explicitly for prediction to work correctly
+    # (I.e. we need to use the same knots for prediction as for fitting!)
+    if 'knots' not in params:
+        if 'df' in params:
+            num_knots_ = params['df']
+        else:
+            num_knots_ = int(len(t) * knot_fraction) if num_knots is None else num_knots
+        knots = tuple(np.linspace(t[0], t[-1], num_knots_))
+        params_['knots'] = knots
+
+    base_function = spline_basis(t, **params_)
 
     model = patsy.dmatrix(base_function)
     fit = sm.GLM(v, model).fit()
@@ -58,8 +64,9 @@ def spline(t, v, spline_basis, knot_fraction=0.25, num_knots=None, params=None, 
     if t_pred is None:
         smoothened = fit.predict(model)
     else:
-        pred_base = spline_basis(t_pred, **params) if 'df' in params else spline_basis(t_pred, df=df, **params)
+        pred_base = spline_basis(t_pred, **params_)
         pred_model = patsy.dmatrix(pred_base)
         smoothened = fit.predict(pred_model)
+        print('updated')
 
     return np.array(smoothened)
