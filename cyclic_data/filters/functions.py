@@ -56,8 +56,8 @@ def spline(t, v, spline_basis, knot_fraction=0.25, num_knots=None, b_degree=None
     t_min = np.min(t) if t_pred is None else min(np.min(t), np.min(t_pred))
     t_max = np.max(t) if t_pred is None else max(np.max(t), np.max(t_pred))
     # Expand bounds to avoid numerical issues (double precision)
-    t_min -= abs(t_min) * 1.e-1
-    t_max += abs(t_max) * 1.e-1
+    t_min -= abs(t_min) * 1.e-12 + 1.e-100
+    t_max += abs(t_max) * 1.e-12 + 1.e-100
 
     # Construct base function for fitting
     base_function = spline_basis(t, knots=knots, lower_bound=t_min, upper_bound=t_max, **params)
