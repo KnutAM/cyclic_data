@@ -19,15 +19,77 @@ def get_pv_inds(test_data, num_per_cycle=2, num_ind_skip=0):
     :return: list of np.arrays with indices for each pv type. list length = num_per_cycle
     :rtype: list[ np.array ]
     """
-    def get_increase_indices(arr, tol=1.e-6):
-        return np.where(arr[1:]-arr[:-1] > tol)[0] + 1
 
-    ch_ind = get_increase_indices(test_data['stp'])[num_ind_skip:]
+    ch_ind = get_stp_change_inds(test_data)[num_ind_skip:]
     indices = []
     for i in range(num_per_cycle):
         indices.append(ch_ind[i::num_per_cycle])
 
     return indices
+
+
+def get_pv_inds_change_strain(test_data, min_change, num_per_cycle=2):
+    """ Get peak and valley indices (can have more than 2 peaks/valleys per cycle)
+        In order for a new peak to be detected the strain must move more than min_change
+        in the von Mises strain space. See :pyfunc:`get_pv_inds_change` for further info
+
+    """
+    def change_fun(td, i1, i2):
+        deps = td['eps'][i2]-td['eps'][i1]
+        dgam = td['gam'][i2]-td['gam'][i1]
+        return np.sqrt(deps**2 + (1.0/3.0)*dgam**2)
+
+    return get_pv_inds_change(test_data, min_change, change_fun, num_per_cycle)
+
+
+def get_pv_inds_change(test_data, min_change, change_fun, num_per_cycle=2):
+    """ Get peak and valley indices (can have more than 2 peaks/valleys per cycle)
+    In order for a new peak to be detected a sufficiently large change from the previous
+    value is required, measured by change_fun.
+
+    :param test_data: test data as dictionary, must contain 'stp' key with step numbers
+    :type test_data: dict
+
+    :param min_change: The minimum change required for starting to count cycles, and consider
+                       that a new segment has started
+    :type min_change: float
+
+    :param change_fun: Function with interface change = change_fun(test_data, i1, i2). It measures
+                       the change of test_data from index i1 to i2.
+    :type change_fun: function handle
+
+    :param num_per_cycle: Number of peaks/valleys per cycle (i.e. for proportional loading num_per_cycle=2, and for
+                          a square loading path num_per_cycle=4
+    :type num_per_cycle: int
+
+    :return: list of np.arrays with indices for each pv type. list length = num_per_cycle
+    :rtype: list[ np.array ]
+    """
+    # Get all indices when the stp channel change
+    ch_ind = get_stp_change_inds(test_data)
+
+    not_done = True
+    i_old = 0
+    i_ind = 0
+    pv_inds = [[] for _ in range(num_per_cycle)]
+    while not_done:
+        icycle = 0
+        while icycle < num_per_cycle:
+            if change_fun(test_data, i_old, ch_ind[i_ind]) > min_change:
+                pv_inds[icycle].append(ch_ind[i_ind])
+                i_old = ch_ind[i_ind]
+                icycle += 1
+            i_ind += 1
+            if i_ind >= len(ch_ind):
+                not_done = False
+                break
+
+    return pv_inds
+
+
+def get_stp_change_inds(test_data, tol=1.e-6):
+    """Return indices when test_data['stp'] increases"""
+    return np.where(test_data['stp'][1:]-test_data['stp'][:-1] > tol)[0] + 1
 
 
 def get_mid_values(test_data, qty, pv_inds):

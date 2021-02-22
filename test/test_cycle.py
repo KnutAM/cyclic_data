@@ -25,6 +25,32 @@ def test_get_pv_inds():
             assert r == approx(c), 'test ' + tn + ' failed'
 
 
+def test_get_pv_inds_change():
+    cycles = np.array([0.0, 1.0, 1.0, 1.0, 2.0, 2.0,
+                       2.1, 2.1, 2.1, 2.3, 10, 12, 12, 14])
+    test_data = {'stp': cycles}
+
+    # Ensure that the same pv inds are returned if change_fun always give sufficient difference
+    def change_fun(test_data, i1, i2):
+        return 1.0
+    pv_inds_std = cy.get_pv_inds(test_data, num_per_cycle=2)
+    pv_inds_change = cy.get_pv_inds_change(test_data, 0.1, change_fun, num_per_cycle=2)
+    for pis, pic in zip(pv_inds_std, pv_inds_change):
+        assert pis == approx(pic)
+
+
+def test_get_pv_inds_change_strain():
+    # to be identif:  -,   -,   -,   -,   -,   0,   0,   0,   0,   1,   2,   2
+    stp = np.array([0.0, 0.0, 0.0, 1.0, 1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 5.0, 5.0])
+    eps = np.array([0.0, 0.0, 0.0, 0.1, 0.5, 1.0, 1.0, 1.0, 1.5, 1.5, 2.0, 3.0])/np.sqrt(2)
+    gam = np.array([0.0, 0.0, 0.0, 0.1, 0.5, 1.0, 1.0, 1.0, 1.5, 1.5, 2.0, 3.0])/np.sqrt(6)
+    test_data = {'stp': stp, 'eps': eps, 'gam': gam}
+    pv_inds = cy.get_pv_inds_change_strain(test_data, min_change=0.2, num_per_cycle=2)
+
+    assert pv_inds[0] == approx(np.array([5, 10]))
+    assert pv_inds[1] == approx(np.array([9]))
+
+
 def test_get_mid_values():
     # Test for correct identification of mid values
     test_data = {'x': np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])}
