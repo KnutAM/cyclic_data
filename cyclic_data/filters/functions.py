@@ -6,11 +6,11 @@ import statsmodels.api as sm
 def polynomial(t, v, deg=3, t_pred=None):
     """ Smooth v-data using polynomial of given degree
     """
-    c = np.polynomial.Polynomial.fit(t, v, deg=deg)
+    p = np.polyfit(t, v, deg=deg)
     if t_pred is None:
-        return np.polynomial.polynomial.polyval(c, t)
+        return np.polyval(p, t)
     else:
-        return np.polynomial.polynomial.polyval(c, t_pred)
+        return np.polyval(p, t_pred)
 
 
 def linear_segments(t, v, num_segments=20, t_pred=None):
@@ -56,9 +56,10 @@ def spline(t, v, spline_basis, knot_fraction=0.25, num_knots=None, params=None, 
     fit = sm.GLM(v, model).fit()
 
     if t_pred is None:
-        return fit.predict(model)
+        smoothened = fit.predict(model)
     else:
         pred_base = spline_basis(t_pred, **params) if 'df' in params else spline_basis(t_pred, df=df, **params)
         pred_model = patsy.dmatrix(pred_base)
-        return fit.predict(pred_model)
+        smoothened = fit.predict(pred_model)
 
+    return np.array(smoothened)
