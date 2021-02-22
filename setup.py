@@ -11,6 +11,6 @@ setup(name='cyclic_data',
       author='Knut Andreas Meyer',
       author_email='knutam@gmail.com',
       url='https://cyclic-after-pdef-r260.readthedocs.io/en/latest/',
-      packages=['cyclic_data', 'cyclic_data.filters'],
+      packages=['cyclic_data'],
       install_requires=requirements
      )
