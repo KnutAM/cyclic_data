@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # Cyclic data analysis
-Analysis and plotting of cyclic data after predeformation of R260 rail steel.
+Analysis and plotting of cyclic data biaxial (axial and torsional) mechanical testing data
 
 ## Installation
 
