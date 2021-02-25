@@ -8,7 +8,6 @@ Analysis and visualization of cyclic data
    :caption: Contents:
    
    intro
-   experiment
    examples
    hdf5_data
    utils
