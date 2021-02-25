@@ -10,7 +10,7 @@ Analysis and plotting of cyclic data biaxial (axial and torsional) mechanical te
 
 To clone (download) the repository using git
 
-`git clone git@github.com:KnutAM/cyclic_after_pdef_R260.git`
+`git clone https://github.com/KnutAM/cyclic_data.git`
 
 Update the repository with `git pull` from inside the repository 
 
