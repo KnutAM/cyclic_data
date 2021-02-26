@@ -59,3 +59,17 @@ def vm_angle(sig, tau):
 
     return angles
 
+
+def evm(eps, gam):
+    """ Calculate the effective von Mises strain given an axial strain and a shear strain
+
+    :param eps: Axial strain, e.g. :math:`\\epsilon_{zz}`
+    :type eps: float, np.array
+
+    :param gam: Shear strain, e.g. :math:`2\\epsilon_{\\theta z}`
+    :type gam: float, np.array
+
+    :returns: The von Mises strain
+    :rtype: float, np.array
+    """
+    return np.sqrt(eps**2 + gam**2/3)
