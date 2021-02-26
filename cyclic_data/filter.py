@@ -44,7 +44,8 @@ def smoothen(test_data, pv_inds, filter_functions, keys=None):
 
     # Reshape indices (note, pv_inds should be sorted!)
     inds = list(np.sort([i for j in pv_inds for i in j]))
-    inds.insert(0, 0)
+    if inds[0] != 0:
+        inds.insert(0, 0)
     inds[-1] = inds[-1] + 1 # Ensure that last datapoint is included
 
     # Apply filter
