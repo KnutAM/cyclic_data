@@ -69,11 +69,13 @@ def get_pv_inds_change(test_data, min_change, change_fun, num_per_cycle=2):
     ch_ind = get_stp_change_inds(test_data)
 
     not_done = True
-    i_old = 0
-    i_ind = 0
+
     pv_inds = [[] for _ in range(num_per_cycle)]
+    pv_inds[0].append(ch_ind[0])
+    i_old = ch_ind[0]
+    i_ind = 1
+    icycle = 1
     while not_done:
-        icycle = 0
         while icycle < num_per_cycle:
             if change_fun(test_data, i_old, ch_ind[i_ind]) > min_change:
                 pv_inds[icycle].append(ch_ind[i_ind])
@@ -83,6 +85,7 @@ def get_pv_inds_change(test_data, min_change, change_fun, num_per_cycle=2):
             if i_ind >= len(ch_ind):
                 not_done = False
                 break
+        icycle = 0
 
     return pv_inds
 

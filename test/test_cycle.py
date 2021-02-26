@@ -47,8 +47,8 @@ def test_get_pv_inds_change_strain():
     test_data = {'stp': stp, 'eps': eps, 'gam': gam}
     pv_inds = cy.get_pv_inds_change_strain(test_data, min_change=0.2, num_per_cycle=2)
 
-    assert pv_inds[0] == approx(np.array([5, 10]))
-    assert pv_inds[1] == approx(np.array([9]))
+    assert pv_inds[0] == approx(np.array([0, 9]))
+    assert pv_inds[1] == approx(np.array([5, 10]))
 
 
 def test_get_mid_values():
