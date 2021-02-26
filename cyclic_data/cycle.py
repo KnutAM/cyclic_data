@@ -153,6 +153,28 @@ def get_segment_values(test_data, qty, pv_inds, operation):
 
     """
 
+    inds1, inds2 = get_segments(pv_inds)
+
+    segment_data = {}
+    for qt in qty:
+        segment_data[qt] = [operation(test_data[qt][i1], test_data[qt][i2]) for i1, i2 in zip(inds1, inds2)]
+
+    return segment_data
+
+
+def get_segments(pv_inds):
+    """ Get the start and end indices for each segment
+
+    :param pv_inds: A list of list of indices corresponding to certain cycle points.
+                    Each outer list contain information about the same point type.
+                    E.g. pv_inds[0] gives peak indices, pv_inds[1] gives valley indices.
+    :type pv_inds: iterable[ iterable[ int ] ]
+
+    :returns: inds1 and inds2 giving the start and end index for the segment.
+              They have the same structure as pv_inds
+    :rtype: iterable[ iterable[ int ] ]
+    """
+
     # Find end of segments
     inds2 = [pv[:] for pv in pv_inds[1:]]
     inds2.append(pv_inds[0][1:])
@@ -161,8 +183,4 @@ def get_segment_values(test_data, qty, pv_inds, operation):
     # has no end index, hence [:len(i2)]
     inds1 = [pv[:len(i2)] for pv, i2 in zip(pv_inds, inds2)]  # Start of segment
 
-    segment_data = {}
-    for qt in qty:
-        segment_data[qt] = [operation(test_data[qt][i1], test_data[qt][i2]) for i1, i2 in zip(inds1, inds2)]
-
-    return segment_data
+    return inds1, inds2
