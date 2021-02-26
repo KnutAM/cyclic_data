@@ -14,7 +14,7 @@ def test_get_pv_inds():
     ind31 = cy.get_pv_inds(test_data, num_per_cycle=3, num_ind_skip=1)
     res = [ind10, ind20, ind31]
 
-    ind10_comp = [np.array([1, 4, 6, 9, 10, 11, 13])]
+    ind10_comp = [np.array([0, 1, 4, 6, 9, 10, 11, 13])]
     ind20_comp = [ind10_comp[0][::2], ind10_comp[0][1::2]]
     ind31_comp = [ind10_comp[0][1::3], ind10_comp[0][2::3], ind10_comp[0][3::3]]
     comps = [ind10_comp, ind20_comp, ind31_comp]

@@ -89,7 +89,10 @@ def get_pv_inds_change(test_data, min_change, change_fun, num_per_cycle=2):
 
 def get_stp_change_inds(test_data, tol=1.e-6):
     """Return indices when test_data['stp'] increases"""
-    return np.where(test_data['stp'][1:]-test_data['stp'][:-1] > tol)[0] + 1
+    change_inds = [0]
+    for i in np.where(test_data['stp'][1:]-test_data['stp'][:-1] > tol)[0] + 1:
+        change_inds.append(i)
+    return change_inds
 
 
 def get_mid_values(test_data, qty, pv_inds):
