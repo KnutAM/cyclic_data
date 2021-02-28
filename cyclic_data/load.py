@@ -1,6 +1,7 @@
 import numpy as np
 import h5py
-import os, shutil
+import os
+import shutil
 import cyclic_data.utils.html as html
 
 
@@ -149,14 +150,10 @@ class Hdf5Data:
             shutil.rmtree(output_dir)
         
         os.mkdir(output_dir)
-        repo_dir = os.path.dirname(os.path.dirname(__file__))
-        tmpl_dir = os.path.join(repo_dir, 'data', 'hdf5attr_to_html')
         html_path = os.path.join(output_dir, 'test_data.html')
         with open(html_path, 'w') as html_fid:
             # Include the fixed content before the table
-            pre_tab = os.path.join(tmpl_dir, 'pre_content.txt')
-            with open(pre_tab, 'r') as pre_fid:
-                html_fid.write(pre_fid.read())
+            html_fid.write(html.get_pre_table())
             
             # Generate the table contents from the hdf attributes
             # Extract table header
@@ -174,18 +171,13 @@ class Hdf5Data:
                                       foot=header, body_formats=_formats))
                 
             # Include the fixed content after the table
-            post_tab = os.path.join(tmpl_dir, 'post_content.txt')
-            with open(post_tab, 'r') as post_fid:
-                html_fid.write(post_fid.read())
+            html_fid.write(html.get_post_table())
         
-        # Copy style and script files into created folder
-        shutil.copy(os.path.join(tmpl_dir, 'style.css'), output_dir)
-        shutil.copy(os.path.join(tmpl_dir, 'table.js'), output_dir)
-        
-                    
-        
-        
-        
+        # Create fixed style and script files in created folder
+        with open(os.path.join(output_dir, 'style.css'), 'w') as fid:
+            fid.write(html.get_table_style())
+        with open(os.path.join(output_dir, 'table.js'), 'w') as fid:
+            fid.write(html.get_table_script())
         
     def is_open(self):
         return True if self.hdf else False
