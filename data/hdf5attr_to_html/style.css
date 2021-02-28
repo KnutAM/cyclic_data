@@ -1,0 +1,11 @@
+/* From https://datatables.net/examples/api/multi_filter.html */
+tfoot input {
+        width: 100%;
+        padding: 3px;
+        box-sizing: border-box;
+    }
+td {
+  display: table-cell;
+  vertical-align: inherit;
+  text-align: right;
+}

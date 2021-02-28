@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!Based on https://datatables.net/examples/api/multi_filter.html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+<script src="table.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="style.css">
+
+<table id="test_data" class="display" style="width:100%">    <thead>
+        <tr>
+            <th>test bar</th>
+            <th>load_type</th>
+            <th>load_angle</th>
+            <th>pdef_level</th>
+            <th>outer_diameter</th>
+            <th>inner_diameter</th>
+            <th>concentricity</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>T01</td>
+            <td>Proportional</td>
+            <td>000.0</td>
+            <td>0</td>
+            <td>14.000</td>
+            <td>12.000</td>
+            <td>0.010</td>
+        </tr>
+        <tr>
+            <td>T02</td>
+            <td>Proportional</td>
+            <td>000.0</td>
+            <td>1</td>
+            <td>14.000</td>
+            <td>12.000</td>
+            <td>0.010</td>
+        </tr>
+        <tr>
+            <td>T03</td>
+            <td>non-proportional</td>
+            <td>000.0</td>
+            <td>1</td>
+            <td>14.000</td>
+            <td>12.000</td>
+            <td>0.010</td>
+        </tr>
+    </tbody>
+    <tfoot>
+        <tr>
+            <th>test bar</th>
+            <th>load_type</th>
+            <th>load_angle</th>
+            <th>pdef_level</th>
+            <th>outer_diameter</th>
+            <th>inner_diameter</th>
+            <th>concentricity</th>
+        </tr>
+    </tfoot>
+</table>
+
+</body>
+</html>

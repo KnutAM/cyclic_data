@@ -1,5 +1,7 @@
 import numpy as np
 import h5py
+import os, shutil
+import cyclic_data.utils.html as html
 
 
 class Hdf5Data:
@@ -108,6 +110,82 @@ class Hdf5Data:
                 'stp': np.array(self.hdf[grp_name]['acnt']) + np.array(self.hdf[grp_name]['tcnt'])}
 
         return data, dict(self.hdf[grp_name].attrs)
+
+    def make_html_table(self, attrs, formats=None, 
+                        output_dir='test_data_html_table'):
+        """ Generate an html table with the attributes to 
+        give an overview over the available test data. 
+        
+        :param attrs: List of attributes to output
+        :type attrs: Iterable[ str ]
+        
+        :param formats: List of format codes for each column without 
+                        percent sign. If not given, default str() 
+                        conversion is used. Example codes are
+                        
+                        - 's': string
+                        - '5.2f': float with length 5 and 2 decimal pts
+                        - '10.4e': exponential with length 5 and 4 pts
+                        
+        :type formats: Iterable[ str ]
+        
+        :param output_dir: The directory in which to save 
+                           the html output
+        :type output_dir: str
+        
+        """
+        # Fix internal formats
+        if formats is None:
+            _formats = None
+        else:
+            assert len(formats) == len(attrs), ('list of formats must '
+                                                + 'be equally long as '
+                                                + 'list of attributes '
+                                                + 'to add to table')
+            _formats = formats[:]
+            _formats.insert(0, 's') # Insert string for group name
+        
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
+        
+        os.mkdir(output_dir)
+        repo_dir = os.path.dirname(os.path.dirname(__file__))
+        tmpl_dir = os.path.join(repo_dir, 'data', 'hdf5attr_to_html')
+        html_path = os.path.join(output_dir, 'test_data.html')
+        with open(html_path, 'w') as html_fid:
+            # Include the fixed content before the table
+            pre_tab = os.path.join(tmpl_dir, 'pre_content.txt')
+            with open(pre_tab, 'r') as pre_fid:
+                html_fid.write(pre_fid.read())
+            
+            # Generate the table contents from the hdf attributes
+            # Extract table header
+            header = ['test bar']
+            for key in attrs:
+                header.append(key)
+            # Extract table content 
+            content = []
+            for grp_name in self.hdf:
+                grp = self.hdf[grp_name]
+                content.append([grp_name])
+                for key in attrs:
+                    content[-1].append(grp.attrs[key])
+            html_fid.write(html.table(head=header, body=content, 
+                                      foot=header, body_formats=_formats))
+                
+            # Include the fixed content after the table
+            post_tab = os.path.join(tmpl_dir, 'post_content.txt')
+            with open(post_tab, 'r') as post_fid:
+                html_fid.write(post_fid.read())
+        
+        # Copy style and script files into created folder
+        shutil.copy(os.path.join(tmpl_dir, 'style.css'), output_dir)
+        shutil.copy(os.path.join(tmpl_dir, 'table.js'), output_dir)
+        
+                    
+        
+        
+        
         
     def is_open(self):
         return True if self.hdf else False

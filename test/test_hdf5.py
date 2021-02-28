@@ -1,3 +1,4 @@
+import os, shutil
 import pathlib as pl
 import numpy as np
 from cyclic_data.load import Hdf5Data
@@ -72,3 +73,31 @@ def test_get_data_by_attributes():
     data, attr = hdf5.get_data_by_attributes(attr)
     assert len(data) == 0
     assert len(attr) == 0
+
+
+def test_html_table():
+    hdf = Hdf5Data(hdf5_test_file)
+
+    attrs = ['load_type', 'load_angle', 'pdef_level', 'outer_diameter', 'inner_diameter', 'concentricity']
+    formats = ['s', '05.1f', '0.0f', '6.3f', '6.3f', '5.3f']
+    hdf.make_html_table(attrs, formats, output_dir='tmp_table')
+    # Ensure that table folder created
+    assert os.path.exists('tmp_table')
+    # Assert that files have been created
+    assert os.path.exists('tmp_table/test_data.html')
+    assert os.path.exists('tmp_table/style.css')
+    assert os.path.exists('tmp_table/table.js')
+
+    # Compare with reference solution
+    ref_file = os.path.join(os.path.dirname(__file__), 'reference_table.html')
+    with open(ref_file, 'r') as fid:
+        reference = fid.read()
+
+    with open('tmp_table/test_data.html', 'r') as fid:
+        created = fid.read()
+    # Check that content match. If not, then a manual check that the rendered output is ok should be done.
+    # If this looks good, the reference solution can be updated if desired
+    assert reference == created, ('Check that html rendering of tmp_table/test_data.html is ok. '
+                                  + 'If changes to html expected and result good, ok to update reference.')
+
+    shutil.rmtree('tmp_table')
