@@ -1,9 +1,8 @@
 import os, shutil
-import pathlib as pl
 import numpy as np
 from cyclic_data.load import Hdf5Data
 
-hdf5_test_file = pl.Path(__file__).parent / 'test_file.hdf5'
+hdf5_test_file = os.path.join(os.path.dirname(__file__), 'test_file.hdf5')
 
 
 def test_test_file():
