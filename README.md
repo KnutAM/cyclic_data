@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.com/KnutAM/cyclic_after_pdef_R260.svg?branch=main&kill_cache=1)](https://travis-ci.com/KnutAM/cyclic_after_pdef_R260)
-[![Coverage Status](https://coveralls.io/repos/github/KnutAM/cyclic_after_pdef_R260/badge.svg?branch=main&kill_cache=1)](https://coveralls.io/github/KnutAM/cyclic_after_pdef_R260?branch=main)
+[![Build Status](https://travis-ci.com/KnutAM/cyclic_data.svg?branch=main&kill_cache=1)](https://travis-ci.com/KnutAM/cyclic_data)
+[![Coverage Status](https://coveralls.io/repos/github/KnutAM/cyclic_data/badge.svg?branch=main&kill_cache=1)](https://coveralls.io/github/KnutAM/cyclic_data?branch=main)
 [![Documentation Status](https://readthedocs.org/projects/cyclic-after-pdef-r260/badge/?version=latest&kill_cache=1)](https://cyclic-after-pdef-r260.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
