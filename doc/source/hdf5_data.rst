@@ -4,7 +4,7 @@ Test data input/output (IO)
 ``Hdf5Write``
 =============
 
-.. autoclass:: io.Hdf5Write
+.. autoclass:: cyclic_data.io.Hdf5Write
    :members:
    :undoc-members:
    
@@ -12,7 +12,7 @@ Test data input/output (IO)
 ``Hdf5Read``
 ============
 
-.. autoclass:: io.Hdf5Read
+.. autoclass:: cyclic_data.io.Hdf5Read
    :members:
    :undoc-members:
    

@@ -4,6 +4,6 @@ This page describes the filterering of experimental data
 
 ``filter``
 =============
-.. automodule:: filter
+.. automodule:: cyclic_data.filter
    :members:
    :undoc-members:

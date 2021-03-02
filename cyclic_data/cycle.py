@@ -31,7 +31,7 @@ def get_pv_inds(test_data, num_per_cycle=2, num_ind_skip=0):
 def get_pv_inds_change_strain(test_data, min_change, num_per_cycle=2):
     """ Get peak and valley indices (can have more than 2 peaks/valleys per cycle)
         In order for a new peak to be detected the strain must move more than min_change
-        in the von Mises strain space. See :pyfunc:`get_pv_inds_change` for further info
+        in the von Mises strain space. See :py:func:`get_pv_inds_change` for further info
 
     """
     def change_fun(td, i1, i2):
