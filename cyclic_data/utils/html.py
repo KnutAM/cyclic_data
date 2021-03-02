@@ -1,7 +1,8 @@
 
 
 def table(head, body, foot, body_formats=None):
-    tab_str = '{:4s}<thead>\n'.format('')
+    tab_str = get_pre_table()
+    tab_str += '{:4s}<thead>\n'.format('')
     tab_str += table_row(head, encap='th')
     tab_str += '{:4s}</thead>\n'.format('')
     tab_str += '{:4s}<tbody>\n'.format('')
@@ -11,7 +12,7 @@ def table(head, body, foot, body_formats=None):
     tab_str += '{:4s}<tfoot>\n'.format('')
     tab_str += table_row(foot, encap='th')
     tab_str += '{:4s}</tfoot>\n'.format('')
-    
+    tab_str += get_post_table()
     return tab_str
     
     

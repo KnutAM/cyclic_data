@@ -2,7 +2,7 @@ import numpy as np
 import h5py
 import os
 import shutil
-import cyclic_data.utils.html as html
+from cyclic_data.utils import html
 
 
 class Hdf5Data:
@@ -152,9 +152,6 @@ class Hdf5Data:
         os.mkdir(output_dir)
         html_path = os.path.join(output_dir, 'test_data.html')
         with open(html_path, 'w') as html_fid:
-            # Include the fixed content before the table
-            html_fid.write(html.get_pre_table())
-            
             # Generate the table contents from the hdf attributes
             # Extract table header
             header = ['test bar']
@@ -167,12 +164,8 @@ class Hdf5Data:
                 content.append([grp_name])
                 for key in attrs:
                     content[-1].append(grp.attrs[key])
-            html_fid.write(html.table(head=header, body=content, 
-                                      foot=header, body_formats=_formats))
-                
-            # Include the fixed content after the table
-            html_fid.write(html.get_post_table())
-        
+            html_fid.write(html.table(head=header, body=content, foot=header, body_formats=_formats))
+
         # Create fixed style and script files in created folder
         with open(os.path.join(output_dir, 'style.css'), 'w') as fid:
             fid.write(html.get_table_style())
@@ -186,4 +179,4 @@ class Hdf5Data:
         """ Close the file object
         """
         self.hdf.close()
-        
+

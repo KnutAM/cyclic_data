@@ -18,7 +18,7 @@ import sys
 repo = os.path.abspath('../..')
 src = repo + '/cyclic_data'
 
-project_paths = [src]
+project_paths = [repo, src]
 for p in project_paths:
     sys.path.insert(0, p)
 
