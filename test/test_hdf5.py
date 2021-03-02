@@ -1,6 +1,6 @@
 import os, shutil
 import numpy as np
-from cyclic_data.load import Hdf5Data
+from cyclic_data.io import Hdf5Read
 
 hdf5_test_file = os.path.join(os.path.dirname(__file__), 'test_file.hdf5')
 
@@ -10,11 +10,11 @@ def test_test_file():
         This test isolates that the test file used to verify other functionalities is working
     """
     try:
-        hdf5 = Hdf5Data(hdf5_test_file)
+        hdf5 = Hdf5Read(hdf5_test_file)
     except Exception as e:
         assert False, "opening test file raised " + str(e)
     
-    assert isinstance(hdf5, Hdf5Data)   # Ensure that instance exists
+    assert isinstance(hdf5, Hdf5Read)   # Ensure that instance exists
     assert hdf5.is_open()               # Ensure that file is open
     
     hdf5.close()
@@ -23,7 +23,7 @@ def test_test_file():
 
 def test_get_data_by_group():
     existing_group = 'T01'
-    hdf5 = Hdf5Data(hdf5_test_file)
+    hdf5 = Hdf5Read(hdf5_test_file)
     data, attr = hdf5.get_data_by_group(existing_group)
     assert isinstance(data, dict)
     assert 'time' in data
@@ -39,7 +39,7 @@ def test_get_data_by_group():
 
 
 def test_get_data_by_attributes():
-    hdf5 = Hdf5Data(hdf5_test_file)
+    hdf5 = Hdf5Read(hdf5_test_file)
 
     # Test that function fails for an attribute not in the data
     def verify_failure():
@@ -75,7 +75,7 @@ def test_get_data_by_attributes():
 
 
 def test_html_table():
-    hdf = Hdf5Data(hdf5_test_file)
+    hdf = Hdf5Read(hdf5_test_file)
 
     attrs = ['load_type', 'load_angle', 'pdef_level', 'outer_diameter', 'inner_diameter', 'concentricity']
     formats = ['s', '05.1f', '0.0f', '6.3f', '6.3f', '5.3f']

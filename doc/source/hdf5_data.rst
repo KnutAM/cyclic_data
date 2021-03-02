@@ -1,18 +1,18 @@
-Test data IO
-************
+Test data input/output (IO)
+***************************
 
 ``Hdf5Write``
 =============
 
-.. autoclass:: write.Hdf5Write
+.. autoclass:: io.Hdf5Write
    :members:
    :undoc-members:
    
 
-``Hdf5Data``
+``Hdf5Read``
 ============
 
-.. autoclass:: load.Hdf5Data
+.. autoclass:: io.Hdf5Read
    :members:
    :undoc-members:
    
