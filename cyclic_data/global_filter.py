@@ -2,7 +2,7 @@ import copy
 import numpy as np
 
 
-def smooth_data(data, cycle_time, keys=None, knots=10, knot_order=3, cycle_order=0):
+def smooth_data(data, cycle_time, keys=None, knots=10, knot_order=3, cycle_order=0, max_ind=0):
     """ Smooth data using splines
 
     :param data: test data - dictionary containing time series arrays
@@ -31,7 +31,9 @@ def smooth_data(data, cycle_time, keys=None, knots=10, knot_order=3, cycle_order
 
     """
     # Create a new data variable for smoothened data
-    sdata = copy.deepcopy(data)
+    sdata = {}
+    for key in data:
+        sdata[key] = np.copy(data[key]) if max_ind=0 else data[key][:max_ind]
 
     # Calculate the fitting matrix
     fit_matrix = get_fit_matrix(sdata['time'], cycle_time, knots, 
