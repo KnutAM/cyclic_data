@@ -1,4 +1,3 @@
-import copy
 import numpy as np
 
 
@@ -33,7 +32,7 @@ def smooth_data(data, cycle_time, keys=None, knots=10, knot_order=3, cycle_order
     # Create a new data variable for smoothened data
     sdata = {}
     for key in data:
-        sdata[key] = np.copy(data[key]) if max_ind=0 else data[key][:max_ind]
+        sdata[key] = np.copy(data[key]) if max_ind == 0 else data[key][:max_ind]
 
     # Calculate the fitting matrix
     fit_matrix = get_fit_matrix(sdata['time'], cycle_time, knots, 
@@ -59,7 +58,7 @@ def smooth_data(data, cycle_time, keys=None, knots=10, knot_order=3, cycle_order
 
 
 def optimize_cycle_times(data, cycle_time, keys=None, dt_max=0.1, max_iter=100, 
-                         knots=0, knot_order=1, cycle_order=1):
+                         knots=0, knot_order=1, cycle_order=1, max_ind=0):
     """ Function that optimize the cycle time points, to reduce the fitting
     error. It supports accounting for multiple channels, but in general 
     it can be best to choose the controlled channel(s) and the default
@@ -88,7 +87,7 @@ def optimize_cycle_times(data, cycle_time, keys=None, dt_max=0.1, max_iter=100,
         return def_scale_fun(t, t5=dt_max*3)
 
     objective_function = get_objfun(data, keys, knots, knot_order, 
-                                    cycle_order, scale_fun=scale_fun)
+                                    cycle_order, scale_fun=scale_fun, max_ind=max_ind)
 
     opt_cycle_time = minimize(objective_function, cycle_time,
                               dt_init=dt_max/10, dt_max=dt_max, 
@@ -250,7 +249,7 @@ def def_scale_fun(t, t5=0.25):
     return np.exp(-3*(t/t5)**2)
 
 
-def get_objfun(data, keys, knots=0, knot_order=1, cycle_order=0, scale_fun=def_scale_fun):
+def get_objfun(data, keys, knots=0, knot_order=1, cycle_order=0, scale_fun=def_scale_fun, max_ind=0):
     """ Return a callable (function) that has interface 
     :code:`e, evec = fun(t)`. 
     That function can be used as input to :py:func:`minimize`
@@ -270,15 +269,15 @@ def get_objfun(data, keys, knots=0, knot_order=1, cycle_order=0, scale_fun=def_s
 
     """
     def objective_function(t):
-        sdata = smooth_data(data, t, keys, knots, knot_order, cycle_order)
+        sdata = smooth_data(data, t, keys, knots, knot_order, cycle_order, max_ind=max_ind)
         err = 0.0
         evec = np.zeros(len(t))
         for key in keys:
             sfac = 1.0 /(np.max(data[key]) - np.min(data[key]))
-            residual = sdata[key] - data[key]
+            residual = sdata[key] - data[key] if max_ind == 0 else sdata[key] - data[key][:max_ind]
             err += np.linalg.norm(residual) * sfac
             for i in range(len(evec)):
-                evec[i] += np.linalg.norm(residual*scale_fun(data['time']-t[i])) * sfac
+                evec[i] += np.linalg.norm(residual*scale_fun(sdata['time']-t[i])) * sfac
         return err, evec
 
     return objective_function
