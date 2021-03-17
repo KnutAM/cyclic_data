@@ -12,6 +12,14 @@ def test_vm_stress():
         assert vm.vm(val, val) == approx(np.sqrt(val**2 + 3*val**2))
 
 
+def test_vm_strain():
+    # Test both for single float and np.array
+    for val in [np.random.rand(), np.random.rand(10)]:
+        assert vm.evm(val, 0.0) == approx(np.abs(val))
+        assert vm.evm(0.0, val) == approx(np.abs(val)/np.sqrt(3))
+        assert vm.evm(val, val) == approx(np.sqrt(val**2 + (1.0/3.0)*val**2))
+
+
 def test_vm_angle():
     val = 1.1 + np.random.rand()
     assert val > 0.0    # Else test conditions are invalid -> change test
