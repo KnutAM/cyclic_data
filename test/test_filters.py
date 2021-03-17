@@ -12,7 +12,7 @@ def assert_dict_equality(dict1, dict2):
 
 def test_smoothen():
     num_points = 100
-    test_data = {'time': np.linspace(0, 10),
+    test_data = {'time': np.linspace(0, 10, num_points),
                  'vals': np.random.rand(num_points),
                  'val2': np.random.rand(num_points)}
     pv_inds = [[3, 40, 80],
