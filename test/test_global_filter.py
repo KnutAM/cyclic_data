@@ -36,8 +36,8 @@ def test_filter():
     assert td_quad_flt['quad'] == approx(test_data['quad'])
 
     # Verify that optimization of cycle times work. Note that there is a small chance of it not
-    # working due to the random pertubation. But for 0.02 this did not occur when testing 10^4 times
-    dt_dist_max = 0.02   # Disturb (perturb) cycle_time to have start guess.
+    # working due to the random pertubation. But for 0.025 this did not occur when testing 10^4 times
+    dt_dist_max = 0.01   # Disturb (perturb) cycle_time to have start guess.
     cycle_time_disturb = cycle_time + dt_dist_max * (2 * np.random.rand(len(cycle_time)) - 1)
     cycle_time_disturb[0] = cycle_time[0]
     cycle_time_disturb[-1] = cycle_time[-1]
