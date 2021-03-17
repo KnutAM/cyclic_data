@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def smooth_data(data, cycle_time, keys=None, knots=10, knot_order=3, cycle_order=0, max_ind=0):
+def smooth_data(data, cycle_time, keys=None, knots=10, knot_order=3, cycle_order=1, max_ind=0):
     """ Smooth data using splines
 
     :param data: test data - dictionary containing time series arrays
@@ -23,7 +23,7 @@ def smooth_data(data, cycle_time, keys=None, knots=10, knot_order=3, cycle_order
     :type knot_order: int
     
     :param cycle_order: The polynomial order over each cycle (the 
-                        derivative number - 1to be continuous)
+                        derivative number - 1 to be continuous)
     :type cycle_order: int
 
     :return: Smoothened data. The time vector remain unaltered.
@@ -91,12 +91,12 @@ def optimize_cycle_times(data, cycle_time, keys=None, dt_max=0.1, max_iter=100,
 
     opt_cycle_time = minimize(objective_function, cycle_time,
                               dt_init=dt_max/10, dt_max=dt_max, 
-                              dt_change_tol=dt_max/1000, max_iter=max_iter)
+                              dt_change_tol=dt_max/1e5, max_iter=max_iter)
 
     return opt_cycle_time
 
 
-def get_fit_matrix(time, cycle_times, knots=10, knot_order=3, cycle_order=0):
+def get_fit_matrix(time, cycle_times, knots=10, knot_order=3, cycle_order=1):
     """ Return the matrix that allows fitting of the following function:
 
     .. math::
@@ -106,7 +106,21 @@ def get_fit_matrix(time, cycle_times, knots=10, knot_order=3, cycle_order=0):
         \\left[ \\sum_{j=N_\\mathrm{co}}^{N_\\mathrm{ko}}\\left[p_{ij}T_i(t)^{j}\\right] +
         \\sum_{k=1}^{N_\\mathrm{k}}\\left[q_{ik}h_{ik}(t)^{N_\\mathrm{ko}}\\right] \\right]
 
-    where :math:`N_\\mathrm{co}` is ``
+    where 
+    
+    - :math:`N_\\mathrm{co}` = ``cycle_order``
+    - :math:`N_\\mathrm{ko}` = ``knot_order``
+    - :math:`N_\\mathrm{c}` = ``len(cycle_times)-1`` (number of cycles)
+    - :math:`N_\\mathrm{k}` = ``knots`` or ``len(knots)``
+    - :math:`t` = ``time``
+    - :math:`t_0` = ``time[0]``
+    - :math:`t_\\mathrm{end}` = ``time[-1]``
+    - :math:`T_i(t) = \\lbrace t - t_i \\rbrace` (macaulay bracket)
+    - :math:`h_{ik} = \\lbrace T_i(t) - T_k \\rbrace`
+    - :math:`t_i` = ´cycle_time[i], i>0`
+    - :math:`T_k` = ``knots`` or ``np.linspace(0, 1, knots+2)[1:-1]``
+    
+    
     """
     assert knot_order >= cycle_order
 
@@ -157,7 +171,6 @@ def _macaulay(t):
 def minimize(objective_function, t0, dt_init, dt_max, dt_change_tol, max_iter=100):
     """ Minimize the error returned by objective_function by changing the cycle time t
 
-
     :param objective_function: The objective function should have a signature e, evec = fun(t).
                                Key assumption: Each item in evec, which has the same length as t,
                                is almost independent on other items in t than at the same position.
@@ -172,8 +185,8 @@ def minimize(objective_function, t0, dt_init, dt_max, dt_change_tol, max_iter=10
     :param dt_max: Maximum change of time from t0
     :type dt_max: float
 
-    :dt_change_tol: Optimization end criterion: Quit when all items in t change less than this value
-    :dt_change_tol: float
+    :param dt_change_tol: Optimization end criterion: Quit when all items in t change less than this value
+    :type dt_change_tol: float
 
     :param max_iter: Maximum number of iterations before ending
     :type max_iter: int
@@ -182,29 +195,41 @@ def minimize(objective_function, t0, dt_init, dt_max, dt_change_tol, max_iter=10
     :rtype: np.array
     """
 
-    dt_mat = np.zeros((4, len(t0)))
-    fe_mat = np.zeros((4, len(t0)))
-    e, fe_mat[0, :] = objective_function(t0)
+    dt_mat = np.zeros((4, len(t0)-2))
+    fe_mat = np.zeros((4, len(t0)-2))
+
+    e, fe_full = objective_function(t0)
+    fe_mat[0, :] = fe_full[1:-1]
     dt_change = dt_init
     err_save = [e]
+    t = np.copy(t0)
     for n_iter in range(max_iter):
         _update_mat(dt_mat, fe_mat, dt_change, dt_max, n_iter)
         e_old = e
-        e, fe_mat[0, :] = objective_function(t0 + dt_mat[0, :])
+        t[1:-1] = t0[1:-1] + dt_mat[0, :]
+        e, fe_full = objective_function(t)
+        fe_mat[0, :] = fe_full[1:-1]
         err_save.append(e)
         if e > e_old and n_iter > 0:
             dt_change = dt_change / 2
+            if dt_change < dt_change_tol:
+                break
+            # Reset matrices to start from smallest error point
+            for i in range(dt_mat.shape[0] - 1):
+                dt_mat[i, :] = dt_mat[i + 1, :]
+                fe_mat[i, :] = fe_mat[i + 1, :]
 
         if np.all(np.abs(dt_mat[0, :]-dt_mat[1, :]) < dt_change_tol):
             break
 
-    return t0 + dt_mat[0, :]
+    return t
 
 
 def _update_mat(dt_mat, fe_mat, dt_change, dt_max, n_iter):
     """ Update dt by quadratic approximation, :math:`E=k_2t^2+k_1t+k_0`.
-    If k_2<0, then just move in negative gradient by dt_cur
-    If k_2>0 (convex), then :math:`t=-k_1/(2k_2)`
+    If k_2<0, then just move in negative gradient by dt_change
+    If k_2>0 (convex), then :math:`t=-k_1/(2k_2)`, unless either the total dt is
+    larger than dt_max or the change of dt is larger than 2*dt_change
 
     """
     # Update matrices
@@ -216,8 +241,8 @@ def _update_mat(dt_mat, fe_mat, dt_change, dt_max, n_iter):
         dt_mat[0, :] += dt_change
         return
     elif n_iter == 1:  # Second iteration, move in negative gradient direction
-        dt_mat[0, :] += np.array(
-            [1 if fe_new < fe_old else -2 for fe_new, fe_old in zip(fe_mat[1, :], fe_mat[2, :])]) * dt_change
+        fe_grad = (fe_mat[1, :] - fe_mat[2, :]) / (dt_mat[1, :] - dt_mat[2, :])
+        dt_mat[0, :] += np.array([1 if grad < 0 else -2 for grad in fe_grad]) * dt_change
         return
 
     for i in range(dt_mat.shape[1]):
@@ -225,13 +250,13 @@ def _update_mat(dt_mat, fe_mat, dt_change, dt_max, n_iter):
         b = fe_mat[1:4, i]
         k = np.linalg.lstsq(a, b, rcond=None)[0]
         dt_mat[0, i] = -k[1] / (2 * k[2])
-
-        if k[2] < 0 or np.abs(dt_mat[0, i]) > dt_max:  # Concave or too large dt
-            #  Move in negative gradient direction with length dt_cur
+        # Concave or too large dt
+        if k[2] < 0 or np.abs(dt_mat[0, i]) > dt_max or np.abs(dt_mat[0, i]-dt_mat[1, i]) > 2*dt_change:
+            #  Move in negative gradient direction with length dt_change
             if ((fe_mat[1, i] - fe_mat[2, i])/(dt_mat[1, i] - dt_mat[2, i])) < 0:  # de/dt < 0
                 dt_mat[0, i] = dt_mat[1, i] + dt_change
             else:
-                dt_mat[0, i] = dt_mat[2, i] - dt_change
+                dt_mat[0, i] = dt_mat[1, i] - dt_change
 
 
 def def_scale_fun(t, t5=0.25):
