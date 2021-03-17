@@ -103,8 +103,11 @@ def get_fit_matrix(time, cycle_times, knots=10, knot_order=3, cycle_order=1):
         f(t) = \\sum_{j=0}^{N_\\mathrm{co}-1} k_j 
         \\left[\\frac{t-t_0}{t_\\mathrm{end}-t_0}\\right]^j +
         \\sum_{i=1}^{N_\\mathrm{c}} 
-        \\left[ \\sum_{j=N_\\mathrm{co}}^{N_\\mathrm{ko}}\\left[p_{ij}T_i(t)^{j}\\right] +
-        \\sum_{k=1}^{N_\\mathrm{k}}\\left[q_{ik}h_{ik}(t)^{N_\\mathrm{ko}}\\right] \\right]
+        \\left[ \\sum_{j=N_\\mathrm{co}}^{N_\\mathrm{ko}}\\left[
+        p_{ij}\\langle t - t_i \\rangle^{j}\\right] +
+        \\sum_{k=1}^{N_\\mathrm{k}}\\left[q_{ik}
+        \\langle \\langle t - t_i \\rangle - T_k \\rangle^{N_\\mathrm{ko}}
+        \\right] \\right]
 
     where 
     
@@ -115,13 +118,17 @@ def get_fit_matrix(time, cycle_times, knots=10, knot_order=3, cycle_order=1):
     - :math:`t` = ``time``
     - :math:`t_0` = ``time[0]``
     - :math:`t_\\mathrm{end}` = ``time[-1]``
-    - :math:`T_i(t) = \\lbrace t - t_i \\rbrace` (macaulay bracket)
-    - :math:`h_{ik} = \\lbrace T_i(t) - T_k \\rbrace`
-    - :math:`t_i` = ´cycle_time[i], i>0`
+    - :math:`t_i` = `cycle_time[i], i>0`
     - :math:`T_k` = ``knots`` or ``np.linspace(0, 1, knots+2)[1:-1]``
-    
-    
+    - :math:`k_j, p_{ij}, q_{ik}`: Fitting parameters corresponding to
+      columns in the returned matrix. The first :math:`N_\\mathrm{co}` 
+      columns correspond to :math:`k_j`. Thereafter follows 
+      :math:`p_{ij}` for :math:`j=N_\\mathrm{co},\\cdots,N_\\mathrm{ko}`
+      and :math:`q_{ik}` for :math:`k=1,\\cdots,N_\\mathrm{k}`, 
+      first for :math:`i=1`, then for :math:`i=2` and so on up to 
+      :math:`i=N_\\mathrm{c}`.
     """
+    
     assert knot_order >= cycle_order
 
     if isinstance(knots, int):
