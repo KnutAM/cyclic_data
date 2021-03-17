@@ -81,7 +81,7 @@ def get_elastic_strain(td, inds, compliance):
     ia = np.arange(inds[0], inds[1])
 
     a = np.zeros((len(ia), num_cols))
-    a[:, 0] = 1.0
+    a[:, 0] = -1.0
 
     # Calculate elastic axial strain
     a[:, 1] = td['sig'][ia]
