@@ -37,13 +37,13 @@ def get_compliance(td, inds, anisotropic=False):
     """ Solve C to approximate [eps-e0, gam-g0]^T = C [sig, tau]^T.
     Formulate problem as, determine c to minimize the least square error of
              a              *    c    =   b
-    |-1,  0, sig,   0, tau|             |eps|
-    | 0, -1,   0, tau, sig|   | e0 |    |gam|
-    |-1,  0, sig,   0, tau|   | g0 |    |eps|
-    | 0, -1,   0, tau, sig| * | Cs |  = |gam|
-    |-1,  0, sig,   0, tau|   | Ct |    |eps|
-    | 0, -1,   0, tau, sig|   | Cst|    |gam|
-    |-1,  0, sig,   0, tau|             |eps|
+    | 1,  0, sig,   0, tau|             |eps|
+    | 0,  1,   0, tau, sig|   | e0 |    |gam|
+    | 1,  0, sig,   0, tau|   | g0 |    |eps|
+    | 0,  1,   0, tau, sig| * | Cs |  = |gam|
+    | 1,  0, sig,   0, tau|   | Ct |    |eps|
+    | 0,  1,   0, tau, sig|   | Cst|    |gam|
+    | 1,  0, sig,   0, tau|             |eps|
     |       ...           |             |...|
     Last column in a and row in c only applicable if anisotropic is True
     """
@@ -52,8 +52,8 @@ def get_compliance(td, inds, anisotropic=False):
     num_pts = 2*(inds[1]-inds[0])
     # Assemble the stress matrix
     a = np.zeros((num_pts, num_param))
-    a[0::2, 0] = -1.0
-    a[1::2, 1] = -1.0
+    a[0::2, 0] = 1.0
+    a[1::2, 1] = 1.0
     a[0::2, 2] = td['sig'][inds[0]:inds[1]]
     a[1::2, 3] = td['tau'][inds[0]:inds[1]]
 
@@ -69,6 +69,15 @@ def get_compliance(td, inds, anisotropic=False):
     # Solve for the compliance (including strain offsets e0 and g0)
     c = np.linalg.lstsq(a, b, rcond=None)
 
+    rank = c[2]
+    if anisotropic and rank == 4:
+        print('Warning: Insufficient rank for anisotropic elastic parameter identification.\n'
+              + '         This can occur if all 4 axial and shear stresses and strains are \n'
+              + '         proportional and the response is isotropic')
+    elif rank < 4:
+        print('Warning: Insufficient rank for elastic parameter identification.\n'
+              + '         This can occur if e.g. both the shear stress and strain are zero')
+
     return c[0]
 
 
@@ -81,7 +90,7 @@ def get_elastic_strain(td, inds, compliance):
     ia = np.arange(inds[0], inds[1])
 
     a = np.zeros((len(ia), num_cols))
-    a[:, 0] = -1.0
+    a[:, 0] = 1.0
 
     # Calculate elastic axial strain
     a[:, 1] = td['sig'][ia]
