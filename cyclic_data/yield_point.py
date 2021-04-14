@@ -84,6 +84,9 @@ def get_compliance(td, inds, anisotropic=False):
 def get_elastic_strain(td, inds, compliance):
     """ Calculate the elastic strains between inds[0] and inds[1] given the compliance"""
 
+    if not isinstance(compliance, np.ndarray):
+        compliance = np.array(compliance)
+
     # Determine if the compliance is anisotropic or not
     anisotropic = len(compliance) == 5
     num_cols = 2 if anisotropic else 1
