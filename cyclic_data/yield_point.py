@@ -205,7 +205,7 @@ def get_yield_point(td, inds, compliance, offset=0.001, dvm_ep0=-1.0):
     deps_pl, dgam_pl = (eps_pl - eps_pl[i_zero_ep], gam_pl - gam_pl[i_zero_ep])
 
     d_ep_vm = vm.evm(deps_pl, dgam_pl)
-    i_above = np.argmax(d_ep_vm > offset)     # First index that ep_vm > offset
+    i_above = np.argmax(d_ep_vm[i_zero_ep:] > offset) + i_zero_ep     # First index that ep_vm > offset
 
     # y(x) = y(x0) + (y(x1)-y(x0))*(x-x0)/(x1-x0)
     interp_coeff = (offset - d_ep_vm[i_above-1])/(d_ep_vm[i_above] - d_ep_vm[i_above-1])
