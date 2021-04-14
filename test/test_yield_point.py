@@ -1,10 +1,10 @@
 import numpy as np
 from pytest import approx
 
-import matplotlib.pyplot as plt
-
 import cyclic_data.von_mises as vm
 import cyclic_data.yield_point as yp
+
+import test.utils_for_test as utils
 
 
 def test_compliance():
@@ -107,6 +107,51 @@ def test_yield_point():
         assert yp_check[key] == approx(yield_point[key]), 'yield_point[' + key + '] was incorrect'
 
 
+def test_yield():
+    num_points_per_cycle = 100
+    num_cycles = 10
+    num_points = num_cycles*num_points_per_cycle + 1
+    time = np.linspace(0, 10, num_points)
+    cycle_inds = np.arange(0, num_points, num_points_per_cycle)
+    cycle_time = time[cycle_inds]
+
+    amp = 0.4/100
+    eps = utils.get_sawtooth(time, cycle_time, amp)
+    pv_inds = [np.array([i for i in cycle_inds[j::2]]) for j in range(2)]
+
+    eps_pl = 0.0
+    mpar = {'emod': 210.0e3, 'sy0': 200}
+    sig = []
+    for e in eps:
+        sig_tmp, eps_pl = ideal_plasticity(mpar, e, eps_pl)
+        sig.append(sig_tmp)
+    sig = np.array(sig)
+
+    gam = 0*eps + 1.e-5 * (2*np.random.rand(num_points) - 1)
+    tau = 0*eps + 1.0 * (2*np.random.rand(num_points) - 1)
+
+    td = {'time': time, 'sig': sig, 'eps': eps, 'gam': gam, 'tau': tau}
+
+    yield_info = yp.get_yield(td, pv_inds, yield_offset=0.01/100, delta_vm=(-1, mpar['sy0']))
+
+    # Check structure of output (keys and lengths)
+    assert all([key in yield_info for key in ['Emod', 'Gmod', 'eps', 'sig', 'gam', 'tau', 'time']])
+    assert all([len(yield_info[key])==len(yield_info['Emod']) for key in yield_info])
+    for iseg in range(len(yield_info['Emod'])):
+        assert all([len(yield_info[key][iseg]) == len(yield_info['Emod'][iseg]) for key in yield_info])
+
+    # Check that stiffness correctly identified
+    emods = [yield_info['Emod'][i][j]
+             for i in range(len(yield_info['Emod']))
+             for j in range(len(yield_info['Emod'][i]))]
+    assert approx(mpar['emod']) == np.array(emods)
+
+    sig_ys = [np.abs(yield_info['sig'][i][j])
+              for i in range(len(yield_info['sig']))
+              for j in range(len(yield_info['sig'][i]))]
+    assert mpar['sy0'] == approx(np.array(sig_ys))
+
+
 # Utility functions
 def get_test_strain(num_points, eps_max, gam_max, t_max=1.0, gam_rel_pert=0.0):
     """ Create test data with linear time, eps, and gam fields
@@ -137,5 +182,15 @@ def alter_stress(td, inds):
         td[key][inds[1]:] = np.max(td[key])*np.random.rand(n1)
 
 
-if __name__ == '__main__':
-    test_yield_point()
+def ideal_plasticity(mpar, eps, eps_p_old):
+    emod = mpar['emod']
+    sig_yield = mpar['sy0']
+    sig_tr = emod * (eps - eps_p_old)
+    if np.abs(sig_tr) > sig_yield:
+        sig = np.sign(sig_tr) * sig_yield
+        eps_p = eps - sig/emod
+    else:
+        sig = sig_tr
+        eps_p = eps_p_old
+
+    return sig, eps_p
