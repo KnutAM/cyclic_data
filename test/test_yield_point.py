@@ -23,9 +23,7 @@ def test_compliance():
     i1 = int(num_points/2)
 
     # Make sure error would rise if items outside the given inds are used in the fit
-    for key in ['sig', 'tau']:
-        td[key][:i0] = 0
-        td[key][i1:] = 0
+    alter_stress(td, [i0, i1])
 
     # Isotropic data and analysis
     c = yp.get_compliance(td, [i0, i1], anisotropic=False)
@@ -44,10 +42,8 @@ def test_compliance():
 
     # Anisotropic data and analysis
     eg = gmod / 10.0
-    stiff = np.array([[emod, eg], [eg, gmod]])
-    td['sig'] = stiff[0, :] @ np.array([td['eps'], td['gam']])
-    td['tau'] = stiff[1, :] @ np.array([td['eps'], td['gam']])
-    compliance = np.linalg.inv(stiff)
+    td['sig'], td['tau'], compliance = get_anisotropic_stress([emod, gmod, eg], td['eps'], td['gam'])
+
     c = yp.get_compliance(td, [i0, i1], anisotropic=True)
     assert c[0:2] == approx(0.0)
     assert c[2] == approx(compliance[0, 0])
@@ -55,8 +51,54 @@ def test_compliance():
     assert c[4] == approx(compliance[0, 1])
 
 
+def test_elastic_strain():
+    num_points = 200
+    inds = [int(num_points/10), int(num_points/2)]
 
+    td = {'time': np.linspace(0, 1, num_points)}
+    emod, gmod, eg = (210.e3, 80.e3, 10.e3)
+    eps0, gam0 = (0.001, 0.0004)
+
+    td['eps'] = 0.005*td['time']
+    td['gam'] = 0.01 * td['time']
+
+    # Isotropic data
+    td['sig'] = emod*(td['eps'] - eps0)
+    td['tau'] = gmod*(td['gam'] - gam0)
+    # Change data outside inds to check that this data is not used
+    alter_stress(td, inds)
+
+    compliance = np.array([eps0, gam0, 1.0/emod, 1.0/gmod])
+    eps_el, gam_el = yp.get_elastic_strain(td, inds, compliance)
+
+    assert eps_el == approx(td['eps'][inds[0]:inds[1]] - eps0)
+    assert gam_el == approx(td['gam'][inds[0]:inds[1]] - gam0)
+
+    # Anisotropic data
+    td['sig'], td['tau'], comp_mat = get_anisotropic_stress([emod, gmod, eg], td['eps'], td['gam'])
+    compliance = np.array([0.0, 0.0, comp_mat[0, 0], comp_mat[1, 1], comp_mat[0, 1]])
+    eps_el, gam_el = yp.get_elastic_strain(td, inds, compliance)
+    assert eps_el == approx(td['eps'][inds[0]:inds[1]])
+    assert gam_el == approx(td['gam'][inds[0]:inds[1]])
+
+
+def get_anisotropic_stress(stiff_param, eps, gam):
+    emod, gmod, eg = stiff_param
+    stiff = np.array([[emod, eg], [eg, gmod]])
+    sig = stiff[0, :] @ np.array([eps, gam])
+    tau = stiff[1, :] @ np.array([eps, gam])
+    compliance = np.linalg.inv(stiff)
+    return sig, tau, compliance
+
+
+def alter_stress(td, inds):
+    n0 = inds[0]
+    n1 = len(td['sig']) - inds[1]
+    for key in ['sig', 'tau']:
+        td[key][:inds[0]] = np.max(td[key])*np.random.rand(n0)
+        td[key][inds[1]:] = np.max(td[key])*np.random.rand(n1)
 
 
 if __name__ == '__main__':
     test_compliance()
+    test_elastic_strain()
