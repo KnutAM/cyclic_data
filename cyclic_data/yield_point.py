@@ -5,7 +5,7 @@ import cyclic_data.von_mises as vm
 import cyclic_data.cycle as ct
 
 
-def get_yield(td, pv_inds, yield_offset=0.001, delta_vm=(30, 200)):
+def get_yield(td, pv_inds, yield_offset=0.001, delta_vm=(-1, 200)):
     """ Return yield-related information about each segment in pv_inds.
     Specifically, the elastic constants and the yield point (eps, sig,
     gam, tau, time at yielding). A segment denotes the data between e.g. a valley the next peak.
