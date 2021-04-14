@@ -4,6 +4,33 @@ from pytest import approx
 import cyclic_data.global_filter as gflt
 
 
+def test_optim():
+    num_points = 100
+    cycle_time = np.array([0.0, 3.4, 8.2, 10.0])
+    delta_ct = [0.3, -0.4]
+    time = np.linspace(cycle_time[0], cycle_time[-1], num_points)
+    linear_data = np.zeros(time.size)
+    k_scale = 1.0
+    k_factor = 1.0
+    for ct in cycle_time:
+        inds = time >= ct
+        t_shift = time[inds] - ct
+        linear_data[inds] += k_factor * k_scale * t_shift
+        k_scale = 2.0
+        k_factor *= -1
+
+    test_data = {'time': time, 'lin': linear_data + 1.0e-2*(2*np.random.rand(num_points) - 1)}
+
+    # Verify that optimization of cycle times work. Note that there is a small chance of it not
+    # working due to the random pertubation. But for 0.025 this did not occur when testing 10^4 times
+    cycle_time_disturb = np.copy(cycle_time)
+    cycle_time_disturb[1] += delta_ct[0]
+    cycle_time_disturb[2] += delta_ct[1]
+    cycle_time_optim = gflt.optimize_cycle_times(test_data, cycle_time_disturb, keys=['lin'])
+
+    assert cycle_time_optim == approx(cycle_time, abs=0.01)
+
+
 def test_filter():
     num_points = 100
     cycle_time = np.array([0.0, 3.4, 8.2, 10.0])
@@ -34,27 +61,6 @@ def test_filter():
     assert not td_linear_flt['vals'] == approx(test_data['vals'])
 
     assert td_quad_flt['quad'] == approx(test_data['quad'])
-
-    # FOR NOW WE SKIP THE RANDOM CHECK OF OPTIMIZATION. Currently, the algorithm is not as stable as it should be
-    # and the test fails with random input. Thus, a better algorithm should be devised for the optimization
-    '''
-    # Verify that optimization of cycle times work. Note that there is a small chance of it not
-    # working due to the random pertubation. But for 0.025 this did not occur when testing 10^4 times
-    dt_dist_max = 0.01   # Disturb (perturb) cycle_time to have start guess.
-    cycle_time_disturb = cycle_time + dt_dist_max * (2 * np.random.rand(len(cycle_time)) - 1)
-    cycle_time_disturb[0] = cycle_time[0]
-    cycle_time_disturb[-1] = cycle_time[-1]
-    cycle_time_optim = gflt.optimize_cycle_times(test_data, cycle_time_disturb, keys=['lin'])
-
-    # Give message in case failure, that at least one re-run could be attempted:
-    fail_msg = ('This test can fail by chance, but is extremely unlikely.\n'
-                + 'The test relies on finding an optimum from a random starting guess.\n'
-                + 'If it fails once it can be accepted, but only if this does not occur again')
-    assert cycle_time_optim == approx(cycle_time, abs=1.0e-4), fail_msg
-    '''
-    cycle_time_disturb = cycle_time + np.array([0.0, 0.004, -0.002, 0.0])
-    cycle_time_optim = gflt.optimize_cycle_times(test_data, cycle_time_disturb, keys=['lin'])
-    assert cycle_time_optim == approx(cycle_time, abs=1.0e-4)
 
 
 def test_macaulay():
@@ -111,4 +117,4 @@ def test_update_mat():
 
 
 if __name__ == '__main__':
-    test_update_mat()
+    test_optim()
