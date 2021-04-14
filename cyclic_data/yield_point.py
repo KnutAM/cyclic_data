@@ -86,23 +86,22 @@ def get_elastic_strain(td, inds, compliance):
 
     # Determine if the compliance is anisotropic or not
     anisotropic = len(compliance) == 5
-    num_cols = 3 if anisotropic else 2
+    num_cols = 2 if anisotropic else 1
     ia = np.arange(inds[0], inds[1])
 
     a = np.zeros((len(ia), num_cols))
-    a[:, 0] = 1.0
 
     # Calculate elastic axial strain
-    a[:, 1] = td['sig'][ia]
+    a[:, 0] = td['sig'][ia]
     if anisotropic:
-        a[:, 2] = td['tau'][ia]
-    eps_el = a @ compliance[[0, 2, 4]] if anisotropic else a @ compliance[[0, 2]]
+        a[:, 1] = td['tau'][ia]
+    eps_el = a @ compliance[[2, 4]] if anisotropic else a @ compliance[[2]]
 
     # Calculate elastic shear strain
-    a[:, 1] = td['tau'][ia]
+    a[:, 0] = td['tau'][ia]
     if anisotropic:
-        a[:, 2] = td['sig'][ia]
-    gam_el = a @ compliance[[1, 3, 4]] if anisotropic else a @ compliance[[1, 3]]
+        a[:, 1] = td['sig'][ia]
+    gam_el = a @ compliance[[3, 4]] if anisotropic else a @ compliance[[3]]
 
     return eps_el, gam_el
 
@@ -123,7 +122,7 @@ def get_yield_point(td, inds, compliance, offset=0.001, dvm_ep0=-1.0):
     :param offset: von Mises strain offset used to detect yield limit
     :type offset: float
 
-    :param dvm_ep0: Change in von Mises stress space untill point where plastic strain is considered zero
+    :param dvm_ep0: Change in von Mises stress space until point where plastic strain is considered zero
                     This makes it possible to avoid potential inaccuracies at the beginning of the cycle
                     Default value -1.0 ensures that the first datapoint in the cycle is used by default
     :type dvm_ep0: float
