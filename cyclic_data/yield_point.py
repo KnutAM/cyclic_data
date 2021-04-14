@@ -1,12 +1,41 @@
+""" `yield_point.py` is used to determine the yielding characteristics of the cyclic data
+"""
 import numpy as np
 import cyclic_data.von_mises as vm
 import cyclic_data.cycle as ct
 
 
 def get_yield(td, pv_inds, yield_offset=0.001, delta_vm=(30, 200)):
-    """ Return information about each segment in pv_inds with elastic constants and yield stress
+    """ Return yield-related information about each segment in pv_inds.
+    Specifically, the elastic constants and the yield point (eps, sig,
+    gam, tau, time at yielding). A segment denotes the data between e.g. a valley the next peak.
+
+    :param td: Test data for which the yield points should be calculated. The keys 'sig',
+               'eps', 'tau', 'gam', and 'time' are required. Content should be np.ndarray
+    :type td: dict
+
+    :param pv_inds: Indices of peaks and valleys (note that more than 2 per cycle is possible,
+                    see :py:func:`ct.get_pv_inds`_
+    :type pv_inds: list[ np.ndarray ]
+
+    :param yield_offset: The amount of effective von mises plastic strain change used to define yielding
+    :type yield_offset: float
+
+    :param delta_vm: Values of change in von mises stress between which the compliance is calculated.
+                     The first (lower) value determines the plastic strain increment zero point, and
+                     it is not possible to identify a yield limit below this value. In general, if a yield
+                     value is determined within the range of delta_vm, the range is a bad choice as the material
+                     should behave elastically in this range.
+    :type delta_vm: iterable
+
+    :returns: A dictionary containing the elastic parameters ('Emod', 'Gmod'), as well as the following data
+              at the time of yielding: 'eps', 'sig', 'gam', 'tau', 'time'. Each item is a list of different
+              types of segments (e.g. first item is valley to peak and second is peak to valley). The items
+              in this list are np.ndarrays describing that yield point for all cycles
+    :rtype: dict
 
     """
+
     delta_vm_min = delta_vm[0]  # Minimum stress change to use when calibrating elastic parameters
     delta_vm_max = delta_vm[1]  # Maximum stress change to use when calibrating elastic parameters.
     keys = ['Emod', 'Gmod', 'eps', 'sig', 'gam', 'tau', 'time']
@@ -34,7 +63,7 @@ def get_yield(td, pv_inds, yield_offset=0.001, delta_vm=(30, 200)):
 
 
 def get_compliance(td, inds, anisotropic=False):
-    """ Solve C to approximate [eps-e0, gam-g0]^T = C [sig, tau]^T.
+    """ Solve e0, g0, C to approximate [eps-e0, gam-g0]^T = C [sig, tau]^T.
     Formulate problem as, determine c to minimize the least square error of
              a              *    c    =   b
     | 1,  0, sig,   0, tau|             |eps|
@@ -46,6 +75,21 @@ def get_compliance(td, inds, anisotropic=False):
     | 1,  0, sig,   0, tau|             |eps|
     |       ...           |             |...|
     Last column in a and row in c only applicable if anisotropic is True
+
+    :param td: Test data for which the compliance should be calculated. The keys
+               'sig', 'eps', 'tau', and 'gam' are required. Content should be np.ndarray
+    :type td: dict
+
+    :param inds: Indices between which test data arrays should be used to calculate
+                 the compliance.
+    :type inds: list[ int ]
+
+    :param anisotropic: Should anisotropic elasticity be assumed (True) or just
+                        isotropic (False)
+    :type anisotropic: bool
+
+    :returns: The compliance vector [e0, g0, Cs, Ct, Cst] (Cst only if anisotropic)
+    :rtype: np.ndarray
     """
 
     num_param = 5 if anisotropic else 4
@@ -82,7 +126,23 @@ def get_compliance(td, inds, anisotropic=False):
 
 
 def get_elastic_strain(td, inds, compliance):
-    """ Calculate the elastic strains between inds[0] and inds[1] given the compliance"""
+    """ Calculate the elastic strains between inds[0] and inds[1]
+    given the compliance
+
+    :param td: Test data for which the elastic strains should be calculated. The keys
+               'sig' and 'tau' are required. Content should be np.ndarray
+    :type td: dict
+
+    :param inds: Indices for the arrays in td between which the elastic strain is calculated
+    :type inds: list[ int ]
+
+    :param compliance: Compliance vector, see output from :py:func:`get_compliance`_
+    :type compliance: np.ndarray, list
+
+    :returns: The axial and shear elastic strains for the data from inds[0] to inds[1]
+    :rtype: np.ndarray, np.ndarray
+
+    """
 
     if not isinstance(compliance, np.ndarray):
         compliance = np.array(compliance)
@@ -113,14 +173,15 @@ def get_yield_point(td, inds, compliance, offset=0.001, dvm_ep0=-1.0):
     """ Consider the given test data, td, from index inds[0] to index inds[1],
     and determine the yield point (time_y, eps_y, sig_y, gam_y, tau_y)
 
-    :param td:  Test data, dictionary with time series arrays
+    :param td:  Test data for which the yield point should be calculated. The keys
+               'sig', 'eps', 'tau', and 'gam' are required. Content should be np.ndarray
     :type td: dict
 
     :param inds: Start and stop indices of the cycle to be considered
     :type inds: list[ int ]
 
-    :param compliance: Compliance matrix, :math:`C`, such that [eps_el, gam_el]^T = C [sig, tau]^T
-    :type compliance: np.array
+    :param compliance: Compliance vector, see output from :py:func:`get_compliance`_
+    :type compliance: np.ndarray, list
 
     :param offset: von Mises strain offset used to detect yield limit
     :type offset: float
@@ -130,8 +191,8 @@ def get_yield_point(td, inds, compliance, offset=0.001, dvm_ep0=-1.0):
                     Default value -1.0 ensures that the first datapoint in the cycle is used by default
     :type dvm_ep0: float
 
-    :returns: The yield point as a dictionary with all keys in data interpolated
-              to the yield point. I.e. all items are floats
+    :returns: The yield point as a dictionary with all keys in td interpolated to the yield point.
+              I.e. all items are floats
     :rtype: dict
 
     """
