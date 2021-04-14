@@ -75,7 +75,8 @@ def optimize_cycle_times(data, cycle_time, keys=None, dt_max=None, max_iter=100,
                  cycle times. 
     :type keys: list[ str ]
     
-    :param dt_max: max change of cycle time. If None, set to 1/4 of average cycle time change
+    :param dt_max: max change of cycle time. If None, set to 1/4 of average
+                   cycle time change
     
     :param max_iter: maximum number of optimization iterations
     
