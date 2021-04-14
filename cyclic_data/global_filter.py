@@ -57,7 +57,7 @@ def smooth_data(data, cycle_time, keys=None, knots=10, knot_order=3, cycle_order
     return sdata
 
 
-def optimize_cycle_times(data, cycle_time, keys=None, dt_max=0.1, max_iter=100, 
+def optimize_cycle_times(data, cycle_time, keys=None, dt_max=None, max_iter=100,
                          knots=0, knot_order=1, cycle_order=1, max_ind=0):
     """ Function that optimize the cycle time points, to reduce the fitting
     error. It supports accounting for multiple channels, but in general 
@@ -75,7 +75,7 @@ def optimize_cycle_times(data, cycle_time, keys=None, dt_max=0.1, max_iter=100,
                  cycle times. 
     :type keys: list[ str ]
     
-    :param dt_max: max change of cycle time
+    :param dt_max: max change of cycle time. If None, set to 1/4 of average cycle time change
     
     :param max_iter: maximum number of optimization iterations
     
@@ -83,6 +83,9 @@ def optimize_cycle_times(data, cycle_time, keys=None, dt_max=0.1, max_iter=100,
     see :py:func:`smooth_data`.
     
     """
+    if dt_max is None:
+        dt_max = np.average(cycle_time[1:]-cycle_time[:-1])/4.0
+
     def scale_fun(t):
         return def_scale_fun(t, t5=dt_max*3)
 
