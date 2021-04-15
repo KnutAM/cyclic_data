@@ -259,8 +259,12 @@ def _update_mat(dt_mat, fe_mat, dt_change, dt_max, n_iter):
     for i in range(dt_mat.shape[1]):
         a = np.transpose([dt_mat[1:4, i] ** j for j in range(3)])
         b = fe_mat[1:4, i]
-        k = np.linalg.lstsq(a, b, rcond=None)[0]
-        dt_mat[0, i] = -k[1] / (2 * k[2])
+        try:
+            k = np.linalg.lstsq(a, b, rcond=None)[0]
+            dt_mat[0, i] = -k[1] / (2 * k[2])
+        except np.linalg.LinAlgError:
+            k = [-1 for _ in range(3)]  # Ensure that concave is detected and move in - gradient instead
+            print('LinAlgError: Using gradient descent instead')
         # Concave or too large dt
         if k[2] < 0 or np.abs(dt_mat[0, i]) > dt_max or np.abs(dt_mat[0, i]-dt_mat[1, i]) > 2*dt_change:
             #  Move in negative gradient direction with length dt_change
