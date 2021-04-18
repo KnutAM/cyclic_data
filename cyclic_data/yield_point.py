@@ -5,7 +5,7 @@ import cyclic_data.von_mises as vm
 import cyclic_data.cycle as ct
 
 
-def get_yield(td, pv_inds, yield_offset=0.001, delta_vm=(-1, 200)):
+def get_yield(td, pv_inds, yield_offset=0.001, delta_vm=(-1, 200), axial=True, shear=True):
     """ Return yield-related information about each segment in pv_inds.
     Specifically, the elastic constants and the yield point (eps, sig,
     gam, tau, time at yielding). A segment denotes the data between e.g. a valley the next peak.
@@ -28,6 +28,12 @@ def get_yield(td, pv_inds, yield_offset=0.001, delta_vm=(-1, 200)):
                      should behave elastically in this range.
     :type delta_vm: iterable
 
+    :param axial: Should the axial compliance/stiffness be obtained? If false, compliance is set to zero
+    :type axial: bool
+
+    :param shear: Should the shear compliance be obtained? If false, compliance is set to zero
+    :type shear: bool
+
     :returns: A dictionary containing the elastic parameters ('Emod', 'Gmod'), as well as the following data
               at the time of yielding: 'eps', 'sig', 'gam', 'tau', 'time'. Each item is a list of different
               types of segments (e.g. first item is valley to peak and second is peak to valley). The items
@@ -47,10 +53,12 @@ def get_yield(td, pv_inds, yield_offset=0.001, delta_vm=(-1, 200)):
             delta_vm = vm.vm(td['sig'][i1:i2]-td['sig'][i1], td['tau'][i1:i2]-td['tau'][i1])
             i1_el = np.argmax(delta_vm > delta_vm_min) + i1
             i2_el = np.argmax(delta_vm > delta_vm_max) + i1
-            c = get_compliance(td, [i1_el, i2_el])
+            c = get_compliance(td, [i1_el, i2_el], axial=axial, shear=shear)
             yp = get_yield_point(td, [i1, i2], c, offset=yield_offset, dvm_ep0=delta_vm_min)
-            yield_info['Emod'][iseg].append(1.0 / c[2])
-            yield_info['Gmod'][iseg].append(1.0 / c[3])
+            if axial:
+                yield_info['Emod'][iseg].append(1.0 / c[2])
+            if shear:
+                yield_info['Gmod'][iseg].append(1.0 / c[3])
             for key in keys[2:]:
                 yield_info[key][iseg].append(yp[key])
 
@@ -62,7 +70,7 @@ def get_yield(td, pv_inds, yield_offset=0.001, delta_vm=(-1, 200)):
     return yield_info
 
 
-def get_compliance(td, inds, anisotropic=False):
+def get_compliance(td, inds, anisotropic=False, axial=True, shear=True):
     """ Solve e0, g0, C to approximate [eps-e0, gam-g0]^T = C [sig, tau]^T.
     Formulate problem as, determine c to minimize the least square error of
              a              *    c    =   b
@@ -88,41 +96,61 @@ def get_compliance(td, inds, anisotropic=False):
                         isotropic (False)
     :type anisotropic: bool
 
+    :param axial: Should the axial compliance be obtained? If false, it is set to zero
+    :type axial: bool
+
+    :param shear: Should the shear compliance be obtained? If false, it is set to zero
+    :type shear: bool
+
     :returns: The compliance vector [e0, g0, Cs, Ct, Cst] (Cst only if anisotropic)
     :rtype: np.ndarray
     """
+    # Check input validity
+    if anisotropic and not (axial and shear):
+        raise ValueError("Cannot have anisotropic if not both axial and shear components are present")
+    if not (axial or shear):
+        raise ValueError("At least one of axial and shear must be true")
 
-    num_param = 5 if anisotropic else 4
-    num_pts = 2*(inds[1]-inds[0])
-    # Assemble the stress matrix
-    a = np.zeros((num_pts, num_param))
-    a[0::2, 0] = 1.0
-    a[1::2, 1] = 1.0
-    a[0::2, 2] = td['sig'][inds[0]:inds[1]]
-    a[1::2, 3] = td['tau'][inds[0]:inds[1]]
+    if axial and shear:
 
-    if anisotropic:
-        a[0::2, 4] = td['tau'][inds[0]:inds[1]]
-        a[1::2, 4] = td['sig'][inds[0]:inds[1]]
+        num_param = 5 if anisotropic else 4
+        num_pts = 2*(inds[1]-inds[0])
+        # Assemble the stress matrix
+        a = np.zeros((num_pts, num_param))
+        a[0::2, 0] = 1.0
+        a[1::2, 1] = 1.0
+        a[0::2, 2] = td['sig'][inds[0]:inds[1]]
+        a[1::2, 3] = td['tau'][inds[0]:inds[1]]
 
-    # Assemble the strain matrix
-    b = np.zeros(num_pts)
-    b[0::2] = td['eps'][inds[0]:inds[1]]
-    b[1::2] = td['gam'][inds[0]:inds[1]]
+        if anisotropic:
+            a[0::2, 4] = td['tau'][inds[0]:inds[1]]
+            a[1::2, 4] = td['sig'][inds[0]:inds[1]]
 
-    # Solve for the compliance (including strain offsets e0 and g0)
-    c = np.linalg.lstsq(a, b, rcond=None)
+        # Assemble the strain matrix
+        b = np.zeros(num_pts)
+        b[0::2] = td['eps'][inds[0]:inds[1]]
+        b[1::2] = td['gam'][inds[0]:inds[1]]
 
-    rank = c[2]
-    if anisotropic and rank == 4:
-        print('Warning: Insufficient rank for anisotropic elastic parameter identification.\n'
-              + '         This can occur if all 4 axial and shear stresses and strains are \n'
-              + '         proportional and the response is isotropic')
-    elif rank < 4:
-        print('Warning: Insufficient rank for elastic parameter identification.\n'
-              + '         This can occur if e.g. both the shear stress and strain are zero')
+        # Solve for the compliance (including strain offsets e0 and g0)
+        c = np.linalg.lstsq(a, b, rcond=None)
 
-    return c[0]
+        rank = c[2]
+        if anisotropic and rank == 4:
+            print('Warning: Insufficient rank for anisotropic elastic parameter identification.\n'
+                  + '         This can occur if all 4 axial and shear stresses and strains are \n'
+                  + '         proportional and the response is isotropic')
+        elif rank < 4:
+            print('Warning: Insufficient rank for elastic parameter identification.\n'
+                  + '         This can occur if e.g. both the shear stress and strain are zero')
+
+        return c[0]
+
+    elif axial:
+        p = np.polyfit(td['sig'][inds[0]:inds[1]], td['eps'][inds[0]:inds[1]], deg=1)
+        return [p[1], np.mean(td['gam'][inds[0]:inds[1]]), p[0], 0.0]
+    elif shear:
+        p = np.polyfit(td['tau'][inds[0]:inds[1]], td['gam'][inds[0]:inds[1]], deg=1)
+        return [np.mean(td['eps'][inds[0]:inds[1]]), p[1], 0.0, p[0]]
 
 
 def get_elastic_strain(td, inds, compliance):
