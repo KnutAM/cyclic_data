@@ -12,6 +12,7 @@ def get_yield(td, pv_inds, yield_offset=0.001, delta_vm=(-1, 200), axial=True, s
 
     :param td: Test data for which the yield points should be calculated. The keys 'sig',
                'eps', 'tau', 'gam', and 'time' are required. Content should be np.ndarray
+               Note: This applies even if axial or shear is False.
     :type td: dict
 
     :param pv_inds: Indices of peaks and valleys (note that more than 2 per cycle is possible,
@@ -86,6 +87,8 @@ def get_compliance(td, inds, anisotropic=False, axial=True, shear=True):
 
     :param td: Test data for which the compliance should be calculated. The keys
                'sig', 'eps', 'tau', and 'gam' are required. Content should be np.ndarray
+               If axial==False, then 'sig' is not required (but mean('eps') is part of compliance)
+               If shear==False, then 'tau' is not required (but mean('gam') is part of compliance)
     :type td: dict
 
     :param inds: Indices between which test data arrays should be used to calculate
